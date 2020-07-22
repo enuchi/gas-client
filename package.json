@@ -1,0 +1,44 @@
+{
+  "name": "gas-client",
+  "version": "0.1.0",
+  "description": "A client-side utility class that can call server-side Google Apps Script functions",
+  "main": "build/index.js",
+  "files": [
+    "build",
+    "src"
+  ],
+  "repository": "https://github.com/enuchi/gas-client.git",
+  "author": "Elisha Nuchi",
+  "license": "MIT",
+  "scripts": {
+    "prepack": "yarn build",
+    "build": "babel src/index.js -d build"
+  },
+  "bugs": {
+    "url": "https://github.com/enuchi/gas-client/issues"
+  },
+  "homepage": "https://github.com/enuchi/gas-client#readme",
+  "keywords": [
+    "Goole",
+    "Apps",
+    "Script",
+    "GAS",
+    "Client"
+  ],
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "^2.0.5"
+  },
+  "dependencies": {
+    "uuid": "^8.2.0"
+  }
+}
