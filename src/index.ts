@@ -8,8 +8,8 @@ import { ServerFunctions, ServerFunctionsMap } from './types/functions';
  * @param {string} origin the target origin subdomain to compare against
  */
 const checkAllowList = (
-  allowedDevelopmentDomains: AllowedDevelopmentDomains | undefined,
-  origin: string
+  origin: string,
+  allowedDevelopmentDomains?: AllowedDevelopmentDomains
 ) => {
   if (typeof allowedDevelopmentDomains === 'string') {
     return allowedDevelopmentDomains
@@ -74,8 +74,8 @@ export default class Server<F extends ServerFunctionsMap = {}> {
 
           // check the allow list for the receiving origin
           const allowOrigin = checkAllowList(
-            allowedDevelopmentDomains,
-            event.origin
+            event.origin,
+            allowedDevelopmentDomains
           );
           if (!allowOrigin) return;
 
