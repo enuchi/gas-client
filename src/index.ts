@@ -1,5 +1,6 @@
 import checkAllowList from './utils/check-allow-list';
 import ignoredFunctionNames from './utils/ignored-function-names';
+import shouldSetupProxy from './utils/should-setup-proxy';
 import proxyHandler from './utils/proxy-handler';
 import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
@@ -29,10 +30,7 @@ export default class Server<F extends ServerFunctionsMap = {}> {
         {} as ServerFunctions<F>
       );
     } catch (err) {
-      if (
-        err.toString() === 'ReferenceError: google is not defined' &&
-        process?.env.NODE_ENV === 'development'
-      ) {
+      if (shouldSetupProxy(err)) {
         // we'll store and access the resolve/reject functions here by id
         window.gasStore = {};
 
