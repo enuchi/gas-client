@@ -16,62 +16,65 @@ export default class Server<F extends ServerFunctionsMap = {}> {
    */
   constructor(private _config?: ServerConfig) {
     try {
-      // get the names of all of our publicly accessible server functions
-      this._serverFunctions = Object.keys(google.script.run).reduce(
-        (acc, functionName) =>
-          // filter out the reserved names -- we don't want those
-          ignoredFunctionNames.includes(functionName)
-            ? acc
-            : {
-                // attach Promise-based functions to the serverFunctions property
-                ...acc,
-                [functionName]: promisify(functionName),
-              },
-        {} as ServerFunctions<F>
-      );
+      this.promisifyGasFunctions();
     } catch (err) {
       if (shouldSetupProxy(err)) {
-        // we'll store and access the resolve/reject functions here by id
-        window.gasStore = {};
-
-        // set up the message 'receive' handler
-        const receiveMessageHandler = (event: MessageEvent) => {
-          const allowedDevelopmentDomains = this._config
-            ?.allowedDevelopmentDomains;
-
-          // check the allow list for the receiving origin
-          const allowOrigin = checkAllowList(
-            event.origin,
-            allowedDevelopmentDomains
-          );
-          if (!allowOrigin) return;
-
-          // we only care about the type: 'RESPONSE' messages here
-          if (event.data.type !== 'RESPONSE') return;
-
-          const { response, status, id } = event.data;
-
-          // look up the saved resolve and reject funtions in our global store based
-          // on the response id, and call the function depending on the response status
-          const { resolve, reject } = window.gasStore[id];
-
-          if (status === 'ERROR') {
-            reject(response);
-          }
-          resolve(response);
-        };
-
-        window.addEventListener('message', receiveMessageHandler, false);
-
-        this._serverFunctions = new Proxy(
-          {},
-          { get: proxyHandler }
-        ) as ServerFunctions<F>;
+        this.setupProxy();
       }
     }
   }
 
   get serverFunctions(): ServerFunctions<F> {
     return this._serverFunctions;
+  }
+
+  private promisifyGasFunctions(): void {
+    // get the names of all of our publicly accessible server functions
+    this._serverFunctions = Object.keys(google.script.run).reduce(
+      (acc, functionName) =>
+        // filter out the reserved names -- we don't want those
+        ignoredFunctionNames.includes(functionName)
+          ? acc
+          : {
+              // attach Promise-based functions to the serverFunctions property
+              ...acc,
+              [functionName]: promisify(functionName),
+            },
+      {}
+    ) as ServerFunctions<F>;
+  }
+
+  private setupProxy(): void {
+    window.gasStore = {};
+    window.addEventListener('message', this.buildMessageListener(), false);
+    this._serverFunctions = new Proxy(
+      {},
+      { get: proxyHandler }
+    ) as ServerFunctions<F>;
+  }
+
+  private buildMessageListener(): (event: MessageEvent) => void {
+    return (event: MessageEvent) => {
+      // check the allow list for the receiving origin
+      const allowOrigin = checkAllowList(
+        event.origin,
+        this._config?.allowedDevelopmentDomains
+      );
+      if (!allowOrigin) return;
+
+      // we only care about the type: 'RESPONSE' messages here
+      if (event.data.type !== 'RESPONSE') return;
+
+      const { response, status, id } = event.data;
+
+      // look up the saved resolve and reject functions in our global store based
+      // on the response id, and call the function depending on the response status
+      const { resolve, reject } = window.gasStore[id];
+
+      if (status === 'ERROR') {
+        reject(response);
+      }
+      resolve(response);
+    };
   }
 }
