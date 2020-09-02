@@ -23,14 +23,14 @@ const checkAllowList = (
 };
 
 export default class Server<F extends ServerFunctionsMap = {}> {
-  serverFunctions: ServerFunctions<F>;
+  private _serverFunctions: ServerFunctions<F> = {} as ServerFunctions<F>;
 
   /**
    * Accepts a single `config` object
-   * @param {object} [config] An optional config object for use in development.
+   * @param {object} [_config] An optional config object for use in development.
    * @param {string|function} [config.allowedDevelopmentDomains] An optional config to specify which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, this will block functionality in development. Will accept either a space-separated string of allowed subdomains, e.g. `https://localhost:3000 http://localhost:3000` (notice no trailing slash); or a function that takes in the requesting origin should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin)`
    */
-  constructor(config?: ServerConfig) {
+  constructor(private _config?: ServerConfig) {
     // skip the reserved names: https://developers.google.com/apps-script/guides/html/reference/run
     const ignoredFunctionNames = [
       'withFailureHandler',
@@ -39,11 +39,9 @@ export default class Server<F extends ServerFunctionsMap = {}> {
       'withUserObject',
     ];
 
-    this.serverFunctions = {} as ServerFunctions<F>;
-
     try {
       // get the names of all of our publicly accessible server functions
-      this.serverFunctions = Object.keys(google.script.run).reduce(
+      this._serverFunctions = Object.keys(google.script.run).reduce(
         (acc, functionName) =>
           // filter out the reserved names -- we don't want those
           ignoredFunctionNames.includes(functionName)
@@ -71,7 +69,8 @@ export default class Server<F extends ServerFunctionsMap = {}> {
 
         // set up the message 'receive' handler
         const receiveMessageHandler = (event: MessageEvent) => {
-          const allowedDevelopmentDomains = config?.allowedDevelopmentDomains;
+          const allowedDevelopmentDomains = this._config
+            ?.allowedDevelopmentDomains;
 
           // check the allow list for the receiving origin
           const allowOrigin = checkAllowList(
@@ -120,8 +119,12 @@ export default class Server<F extends ServerFunctionsMap = {}> {
             };
           },
         };
-        this.serverFunctions = new Proxy({}, handler) as ServerFunctions<F>;
+        this._serverFunctions = new Proxy({}, handler) as ServerFunctions<F>;
       }
     }
+  }
+
+  get serverFunctions(): ServerFunctions<F> {
+    return this._serverFunctions;
   }
 }
