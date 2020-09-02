@@ -1,6 +1,7 @@
 import checkAllowList from './utils/check-allow-list';
 import ignoredFunctionNames from './utils/ignored-function-names';
 import proxyHandler from './utils/proxy-handler';
+import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
 import { ServerFunctions, ServerFunctionsMap } from './types/functions';
 
@@ -23,13 +24,7 @@ export default class Server<F extends ServerFunctionsMap = {}> {
             : {
                 // attach Promise-based functions to the serverFunctions property
                 ...acc,
-                [functionName]: (...args: unknown[]) =>
-                  new Promise((resolve, reject) => {
-                    google.script.run
-                      .withSuccessHandler(resolve)
-                      .withFailureHandler(reject)
-                      [functionName](...args);
-                  }),
+                [functionName]: promisify(functionName),
               },
         {} as ServerFunctions<F>
       );
