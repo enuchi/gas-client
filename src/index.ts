@@ -64,9 +64,7 @@ export default class Server<F extends ServerFunctionsMap = {}> {
     } catch (err) {
       if (
         err.toString() === 'ReferenceError: google is not defined' &&
-        process &&
-        process.env &&
-        process.env.NODE_ENV === 'development'
+        process?.env.NODE_ENV === 'development'
       ) {
         // we'll store and access the resolve/reject functions here by id
         window.gasStore = {};
