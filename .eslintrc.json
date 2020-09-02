@@ -6,7 +6,6 @@
     "plugin:prettier/recommended"
   ],
   "plugins": [
-    "babel",
     "@typescript-eslint",
     "prettier"
   ],
