@@ -60,10 +60,9 @@ export default class Server<F extends ServerFunctionsMap = {}> {
         event.origin,
         this._config?.allowedDevelopmentDomains
       );
-      if (!allowOrigin) return;
 
       // we only care about the type: 'RESPONSE' messages here
-      if (event.data.type !== 'RESPONSE') return;
+      if (!allowOrigin || event.data.type !== 'RESPONSE') return;
 
       const { response, status, id } = event.data;
 
