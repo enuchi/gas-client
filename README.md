@@ -16,8 +16,8 @@ Install
 ```
 
 ```javascript
-import Server from 'gas-client';
-const { serverFunctions } = new Server();
+import { GasClient } from 'gas-client';
+const { serverFunctions } = new GasClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -31,9 +31,9 @@ serverFunctions
 To use with [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server), pass in a config object with `allowedDevelopmentDomains` indicating the localhost port you are using. This setting will be ignored in production (see below for more details).
 
 ```javascript
-import Server from 'gas-client';
+import { GasClient } from 'gas-client';
 
-const { serverFunctions } = new Server({
+const { serverFunctions } = new GasClient({
   allowedDevelopmentDomains: 'https://localhost:3000',
 });
 
@@ -61,8 +61,8 @@ google.script.run
 
 ```javascript
 // With this package we can now do this:
-import Server from 'gas-client';
-const { serverFunctions } = new Server();
+import { GasClient } from 'gas-client';
+const { serverFunctions } = new GasClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -85,6 +85,65 @@ Now we can use familiar Promises in our client-side code and have easy access to
 
 ---
 
+## [New!] Typescript
+
+This project now supports typescript!
+
+To use it, simply import your server functions and pass them as a type parameter when creating your server
+
+### On your server-side code
+```typescript
+// src/server/index.ts
+
+interface SheetData {
+  name: string
+  numOfRows: number
+}
+
+const getSheetData = (): SheetData => {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  return {
+    name: sheet.getName(),
+    numOfRows: sheet.getMaxRows(),
+  }
+}
+
+const appendRowsToSheet = (sheetName: string, rowsToAdd: number): void => {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  sheet.insertRowsAfter(
+    sheet.getMaxRows(),
+    rowsToAdd,
+  );
+}
+
+export { getSheetData, appendRowsToSheet }
+```
+
+### On your server-side code
+```typescript
+// src/client/add-rows.ts
+
+import { GasClient } from 'gas-client';
+import { showUserPrompt } from './show-user-prompt'
+import * as server from '../server';
+
+const { serverFunctions } = new GasClient<typeof server>();
+
+const promptUser = async (): Promise<void> => {
+  const { name, numOfRows } = await serverFunctions.getSheetData();
+  const response = await showUserPrompt(`Sheet ${name} has ${numOfRows} rows. How many would you like to add?`);
+  serverFunctions.appendRowsToSheet(name, numOfRows);
+}
+```
+
+Now you can have your function names, parameters and return types checked.
+
+### Get better IDE support and catch errors ahead!
+
+![Get-better-IDE](https://i.imgur.com/gPmOPqX.gif)
+
+---
+
 ## API
 
 The config object takes:
@@ -94,7 +153,7 @@ The config object takes:
 
 ### Production mode
 
-In the normal Google Apps Script production environment, `new Server()` will have one available method:
+In the normal Google Apps Script production environment, `new GasClient()` will have one available method:
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
 
@@ -102,11 +161,7 @@ Note that the `allowedDevelopmentDomains` configuration will be ignored in produ
 
 ### Development mode
 
-Development mode for the `gas-client` helper class will be run when:
-
-1. the `google` client API cannot be found, i.e. an error is thrown with the message "ReferenceError: google is not defined", and
-
-2. a `process.env.NODE_ENV` variable is set to `'development'`. [webpack.DefinePlugin](https://webpack.js.org/plugins/define-plugin/) can be set this up like this:
+Development mode for the `gas-client` helper class will be run when the `google` client API cannot be found, i.e. an error is thrown with the message "google is not defined"
 
    ```javascript
    plugins: [
@@ -117,6 +172,6 @@ Development mode for the `gas-client` helper class will be run when:
    ];
    ```
 
-Calling `new Server({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
+Calling `new GasClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
 
 - `serverFunctions`: a proxy object, used for development purposes, that mimics calling `google.script.run`. It will dispatch a message to the parent iframe (our custom Dev Server), which will call an app that actually interacts with the `google.script.run` API. Development mode will also handle the response and resolve or reject based on the response type. See the implementation for details on the event signature.
