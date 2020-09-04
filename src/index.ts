@@ -6,7 +6,7 @@ import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
 import { ServerFunctions, ServerFunctionsMap } from './types/functions';
 
-export default class GasClient<F extends ServerFunctionsMap = {}> {
+class GasClient<F extends ServerFunctionsMap = {}> {
   private _serverFunctions: ServerFunctions<F> = {} as ServerFunctions<F>;
 
   /**
@@ -77,3 +77,5 @@ export default class GasClient<F extends ServerFunctionsMap = {}> {
     };
   }
 }
+
+export { GasClient, ServerFunctions };
