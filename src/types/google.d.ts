@@ -38,7 +38,7 @@ declare namespace google {
 
     interface IUrlLocation {
       /**
-       * The string value of URL fragment after the # character, or an emptry string if no URL fragment is present
+       * The string value of URL fragment after the # character, or an empty string if no URL fragment is present
        */
       hash: string;
       /**
