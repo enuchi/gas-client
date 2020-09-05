@@ -4,8 +4,7 @@
   "description": "A client-side utility class that can call server-side Google Apps Script functions",
   "main": "build/index.js",
   "files": [
-    "build",
-    "src"
+    "build"
   ],
   "repository": "https://github.com/enuchi/gas-client.git",
   "author": "Elisha Nuchi",
