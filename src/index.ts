@@ -1,6 +1,6 @@
 import checkAllowList from './utils/check-allow-list';
 import ignoredFunctionNames from './utils/ignored-function-names';
-import shouldSetupProxy from './utils/should-setup-proxy';
+import isGASEnvironment from './utils/is-gas-environment';
 import proxyHandler from './utils/proxy-handler';
 import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
@@ -15,12 +15,10 @@ class GASClient<F extends ServerFunctionsMap = {}> {
    * @param {string|function} [config.allowedDevelopmentDomains] An optional config to specify which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, this will block functionality in development. Will accept either a space-separated string of allowed subdomains, e.g. `https://localhost:3000 http://localhost:3000` (notice no trailing slash); or a function that takes in the requesting origin should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin)`
    */
   constructor(private _config?: ServerConfig) {
-    try {
+    if (isGASEnvironment()) {
       this.promisifyGASFunctions();
-    } catch (err) {
-      if (shouldSetupProxy(err)) {
-        this.setupProxy();
-      }
+    } else {
+      this.setupProxy();
     }
   }
 
