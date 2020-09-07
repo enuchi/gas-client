@@ -4,10 +4,10 @@ import isGASEnvironment from './utils/is-gas-environment';
 import proxyHandler from './utils/proxy-handler';
 import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
-import { ServerFunctions, ServerFunctionsMap } from './types/functions';
+import { ServerFunctions, FunctionMap } from './types/functions';
 
-class GASClient<F extends ServerFunctionsMap = {}> {
-  private _serverFunctions: ServerFunctions<F> = {} as ServerFunctions<F>;
+class GASClient<FM extends FunctionMap = {}> {
+  private _serverFunctions: ServerFunctions<FM> = {} as ServerFunctions<FM>;
 
   /**
    * Accepts a single `config` object
@@ -22,7 +22,7 @@ class GASClient<F extends ServerFunctionsMap = {}> {
     }
   }
 
-  get serverFunctions(): ServerFunctions<F> {
+  get serverFunctions(): ServerFunctions<FM> {
     return this._serverFunctions;
   }
 
@@ -39,25 +39,19 @@ class GASClient<F extends ServerFunctionsMap = {}> {
               [functionName]: promisify(functionName),
             },
       {}
-    ) as ServerFunctions<F>;
+    ) as ServerFunctions<FM>;
   }
 
   private setupProxy(): void {
     window.gasStore = {};
     window.addEventListener('message', this.buildMessageListener(), false);
-    this._serverFunctions = new Proxy(
-      {},
-      { get: proxyHandler }
-    ) as ServerFunctions<F>;
+    this._serverFunctions = new Proxy({}, { get: proxyHandler }) as ServerFunctions<FM>;
   }
 
   private buildMessageListener(): (event: MessageEvent) => void {
     return (event: MessageEvent) => {
       // check the allow list for the receiving origin
-      const allowOrigin = checkAllowList(
-        event.origin,
-        this._config?.allowedDevelopmentDomains
-      );
+      const allowOrigin = checkAllowList(event.origin, this._config?.allowedDevelopmentDomains);
 
       // we only care about the type: 'RESPONSE' messages here
       if (!allowOrigin || event.data.type !== 'RESPONSE') return;
