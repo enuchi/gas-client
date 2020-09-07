@@ -1,13 +1,14 @@
-import checkAllowList from './utils/check-allow-list';
-import ignoredFunctionNames from './utils/ignored-function-names';
 import isGASEnvironment from './utils/is-gas-environment';
-import proxyHandler from './utils/proxy-handler';
-import promisify from './utils/promisify';
+
+import { FunctionHost } from './classes/function-host';
+import { GASPromises } from './classes/gas-promises';
+import { ServerProxy } from './classes/server-proxy';
+
 import { ServerConfig } from './types/config';
 import { ServerFunctions, FunctionMap } from './types/functions';
 
 class GASClient<FM extends FunctionMap = {}> {
-  private _serverFunctions: ServerFunctions<FM> = {} as ServerFunctions<FM>;
+  private _functionHost: FunctionHost<FM>;
 
   /**
    * Accepts a single `config` object
@@ -16,57 +17,14 @@ class GASClient<FM extends FunctionMap = {}> {
    */
   constructor(private _config?: ServerConfig) {
     if (isGASEnvironment()) {
-      this.promisifyGASFunctions();
+      this._functionHost = new GASPromises();
     } else {
-      this.setupProxy();
+      this._functionHost = new ServerProxy(this._config);
     }
   }
 
   get serverFunctions(): ServerFunctions<FM> {
-    return this._serverFunctions;
-  }
-
-  private promisifyGASFunctions(): void {
-    // get the names of all of our publicly accessible server functions
-    this._serverFunctions = Object.keys(google.script.run).reduce(
-      (acc, functionName) =>
-        // filter out the reserved names -- we don't want those
-        ignoredFunctionNames.includes(functionName)
-          ? acc
-          : {
-              // attach Promise-based functions to the serverFunctions property
-              ...acc,
-              [functionName]: promisify(functionName),
-            },
-      {}
-    ) as ServerFunctions<FM>;
-  }
-
-  private setupProxy(): void {
-    window.gasStore = {};
-    window.addEventListener('message', this.buildMessageListener(), false);
-    this._serverFunctions = new Proxy({}, { get: proxyHandler }) as ServerFunctions<FM>;
-  }
-
-  private buildMessageListener(): (event: MessageEvent) => void {
-    return (event: MessageEvent) => {
-      // check the allow list for the receiving origin
-      const allowOrigin = checkAllowList(event.origin, this._config?.allowedDevelopmentDomains);
-
-      // we only care about the type: 'RESPONSE' messages here
-      if (!allowOrigin || event.data.type !== 'RESPONSE') return;
-
-      const { response, status, id } = event.data;
-
-      // look up the saved resolve and reject functions in our global store based
-      // on the response id, and call the function depending on the response status
-      const { resolve, reject } = window.gasStore[id];
-
-      if (status === 'ERROR') {
-        reject(response);
-      }
-      resolve(response);
-    };
+    return this._functionHost.serverFunctions;
   }
 }
 
