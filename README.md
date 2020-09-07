@@ -17,8 +17,8 @@ Install
 ```
 
 ```javascript
-import { GasClient } from 'gas-client';
-const { serverFunctions } = new GasClient();
+import { GASClient } from 'gas-client';
+const { serverFunctions } = new GASClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -32,9 +32,9 @@ serverFunctions
 To use with [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server), pass in a config object with `allowedDevelopmentDomains` indicating the localhost port you are using. This setting will be ignored in production (see below for more details).
 
 ```javascript
-import { GasClient } from 'gas-client';
+import { GASClient } from 'gas-client';
 
-const { serverFunctions } = new GasClient({
+const { serverFunctions } = new GASClient({
   allowedDevelopmentDomains: 'https://localhost:3000',
 });
 
@@ -62,8 +62,8 @@ google.script.run
 
 ```javascript
 // With this package we can now do this:
-import { GasClient } from 'gas-client';
-const { serverFunctions } = new GasClient();
+import { GASClient } from 'gas-client';
+const { serverFunctions } = new GASClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -123,11 +123,11 @@ export { getSheetData, appendRowsToSheet };
 ```typescript
 // src/client/add-rows.ts
 
-import { GasClient } from 'gas-client';
+import { GASClient } from 'gas-client';
 import { showUserPrompt } from './show-user-prompt';
 import * as server from '../server';
 
-const { serverFunctions } = new GasClient<typeof server>();
+const { serverFunctions } = new GASClient<typeof server>();
 
 const promptUser = async (): Promise<void> => {
   const { name, numOfRows } = await serverFunctions.getSheetData();
@@ -153,7 +153,7 @@ The config object takes:
 
 ### Production mode
 
-In the normal Google Apps Script production environment, `new GasClient()` will have one available method:
+In the normal Google Apps Script production environment, `new GASClient()` will have one available method:
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
 
@@ -163,6 +163,6 @@ Note that the `allowedDevelopmentDomains` configuration will be ignored in produ
 
 Development mode for the `gas-client` helper class will be run when the `google` client API cannot be found, i.e. an error is thrown with the message "google is not defined"
 
-Calling `new GasClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
+Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
 
 - `serverFunctions`: a proxy object, used for development purposes, that mimics calling `google.script.run`. It will dispatch a message to the parent iframe (our custom Dev Server), which will call an app that actually interacts with the `google.script.run` API. Development mode will also handle the response and resolve or reject based on the response type. See the implementation for details on the event signature.

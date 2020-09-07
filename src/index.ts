@@ -6,7 +6,7 @@ import promisify from './utils/promisify';
 import { ServerConfig } from './types/config';
 import { ServerFunctions, ServerFunctionsMap } from './types/functions';
 
-class GasClient<F extends ServerFunctionsMap = {}> {
+class GASClient<F extends ServerFunctionsMap = {}> {
   private _serverFunctions: ServerFunctions<F> = {} as ServerFunctions<F>;
 
   /**
@@ -16,7 +16,7 @@ class GasClient<F extends ServerFunctionsMap = {}> {
    */
   constructor(private _config?: ServerConfig) {
     try {
-      this.promisifyGasFunctions();
+      this.promisifyGASFunctions();
     } catch (err) {
       if (shouldSetupProxy(err)) {
         this.setupProxy();
@@ -28,7 +28,7 @@ class GasClient<F extends ServerFunctionsMap = {}> {
     return this._serverFunctions;
   }
 
-  private promisifyGasFunctions(): void {
+  private promisifyGASFunctions(): void {
     // get the names of all of our publicly accessible server functions
     this._serverFunctions = Object.keys(google.script.run).reduce(
       (acc, functionName) =>
@@ -78,4 +78,4 @@ class GasClient<F extends ServerFunctionsMap = {}> {
   }
 }
 
-export { GasClient, ServerFunctions };
+export { GASClient, ServerFunctions };

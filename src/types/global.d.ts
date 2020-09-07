@@ -1,4 +1,4 @@
-type GasStore = Record<
+type GASStore = Record<
   string,
   {
     resolve: (value?: unknown) => void;
@@ -7,5 +7,5 @@ type GasStore = Record<
 >;
 
 interface Window {
-  gasStore: GasStore;
+  gasStore: GASStore;
 }
