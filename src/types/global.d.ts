@@ -6,6 +6,32 @@ type GASStore = Record<
   }
 >;
 
-interface Window {
+interface GasFunctionData {
+  id: string;
+  type: 'REQUEST' | 'RESPONSE';
+}
+
+interface DevServerRequest extends GasFunctionData {
+  args: unknown[];
+  functionName: string;
+  type: 'REQUEST';
+}
+
+interface DevServerResponse extends GasFunctionData {
+  response: unknown;
+  status: 'ERROR' | 'SUCCESS';
+  type: 'RESPONSE';
+}
+
+interface DevServerContentWindow<Origin extends 'GAS' | 'App'> extends Window {
+  postMessage: (
+    message: Origin extends 'GAS' ? DevServerResponse : DevServerRequest,
+    targetOrigin: string,
+    transfer?: Transferable[]
+  ) => void;
+}
+
+interface AppWindow extends Window {
+  parent: DevServerContentWindow<'App'>;
   gasStore: GASStore;
 }

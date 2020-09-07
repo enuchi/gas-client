@@ -4,6 +4,8 @@ import { ServerConfig } from '../types/config';
 import { FunctionHost } from '../classes/function-host';
 import { FunctionMap, ServerFunctions } from '../types/functions';
 
+declare const window: AppWindow;
+
 class ServerProxy<FM extends FunctionMap> extends FunctionHost<FM> {
   constructor(private _config?: ServerConfig) {
     super();
