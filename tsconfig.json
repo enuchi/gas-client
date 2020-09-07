@@ -3,16 +3,11 @@
     "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": [
-      "DOM",
-      "ES2019"
-    ],
+    "lib": ["DOM", "ES2019"],
     "module": "commonjs",
     "outDir": "./build/",
     "strict": true,
     "target": "es5"
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

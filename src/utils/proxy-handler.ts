@@ -1,9 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 
-export default (
-  target: unknown,
-  functionName: string
-): ((...args: unknown[]) => Promise<unknown>) => {
+export default (target: unknown, functionName: string): ((...args: unknown[]) => Promise<unknown>) => {
   const id = uuidv4();
   const promise = new Promise((resolve, reject) => {
     // store the new Promise's resolve and reject

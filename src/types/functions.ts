@@ -1,8 +1,6 @@
 export type FunctionMap = Record<string, (...args: any[]) => any>;
 
-type Promisified<F extends (...args: any[]) => any> = (
-  ...params: Parameters<F>
-) => Promise<ReturnType<F>>;
+type Promisified<F extends (...args: any[]) => any> = (...params: Parameters<F>) => Promise<ReturnType<F>>;
 
 type RecognizedServerFunctions<R extends FunctionMap> = {
   [Name in keyof R]: Promisified<R[Name]>;
@@ -12,7 +10,4 @@ type UnrecognizedServerFunctions = {
   [key: string]: (...args: any[]) => Promise<any>;
 };
 
-export type ServerFunctions<FM extends FunctionMap> = RecognizedServerFunctions<
-  FM
-> &
-  UnrecognizedServerFunctions;
+export type ServerFunctions<FM extends FunctionMap> = RecognizedServerFunctions<FM> & UnrecognizedServerFunctions;

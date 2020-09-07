@@ -9,18 +9,12 @@ class ServerProxy<FM extends FunctionMap> extends FunctionHost<FM> {
     super();
     window.gasStore = {};
     window.addEventListener('message', this.buildMessageListener(), false);
-    this._serverFunctions = new Proxy(
-      {},
-      { get: proxyHandler }
-    ) as ServerFunctions<FM>;
+    this._serverFunctions = new Proxy({}, { get: proxyHandler }) as ServerFunctions<FM>;
   }
 
   private buildMessageListener(): (event: MessageEvent) => void {
     return (event: MessageEvent) => {
-      const allowOrigin = checkAllowList(
-        event.origin,
-        this._config?.allowedDevelopmentDomains
-      );
+      const allowOrigin = checkAllowList(event.origin, this._config?.allowedDevelopmentDomains);
       if (!allowOrigin || event.data.type !== 'RESPONSE') return;
 
       const { response, status, id } = event.data;
