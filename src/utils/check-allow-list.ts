@@ -5,7 +5,7 @@ import { AllowedDevelopmentDomains } from '../types/config';
  * @param {string|function} allowedDevelopmentDomains either a string of space-separated allowed subdomains or a function that accepts the origin as an argument and returns true if permitted
  * @param {string} origin the target origin subdomain to compare against
  */
-export default (eventOrigin: string, allowedDevelopmentDomains?: AllowedDevelopmentDomains): boolean => {
+const checkAllowList = (eventOrigin: string, allowedDevelopmentDomains?: AllowedDevelopmentDomains): boolean => {
   if (typeof allowedDevelopmentDomains === 'string') {
     return allowedDevelopmentDomains.split(' ').some((permittedOrigin) => permittedOrigin === eventOrigin);
   }
@@ -16,3 +16,5 @@ export default (eventOrigin: string, allowedDevelopmentDomains?: AllowedDevelopm
 
   return false;
 };
+
+export { checkAllowList };

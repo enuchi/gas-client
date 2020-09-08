@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 declare const window: AppWindow;
 
-export default (target: unknown, functionName: string): ((...args: unknown[]) => Promise<unknown>) => {
+const proxyHandler = (target: unknown, functionName: string): ((...args: unknown[]) => Promise<unknown>) => {
   const id = uuidv4();
   const promise = new Promise((resolve, reject) => {
     // store the new Promise's resolve and reject
@@ -23,3 +23,5 @@ export default (target: unknown, functionName: string): ((...args: unknown[]) =>
     return promise;
   };
 };
+
+export { proxyHandler };

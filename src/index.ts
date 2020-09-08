@@ -1,9 +1,7 @@
-import isGASEnvironment from './utils/is-gas-environment';
-
+import { isGASEnvironment } from './utils/is-gas-environment';
 import { FunctionHost } from './classes/function-host';
 import { GASPromises } from './classes/gas-promises';
 import { ServerProxy } from './classes/server-proxy';
-
 import { ServerConfig } from './types/config';
 import { ServerFunctions, FunctionMap } from './types/functions';
 

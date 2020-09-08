@@ -1,5 +1,7 @@
-export type AllowedDevelopmentDomains = string | ((origin: string) => boolean);
+type AllowedDevelopmentDomains = string | ((origin: string) => boolean);
 
-export interface ServerConfig {
+interface ServerConfig {
   allowedDevelopmentDomains: AllowedDevelopmentDomains;
 }
+
+export { AllowedDevelopmentDomains, ServerConfig };

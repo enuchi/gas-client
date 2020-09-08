@@ -1,4 +1,4 @@
-export default (functionName: string) => {
+const promisify = (functionName: string) => {
   return (...args: unknown[]) =>
     new Promise((resolve, reject) => {
       google.script.run
@@ -7,3 +7,5 @@ export default (functionName: string) => {
         [functionName](...args);
     });
 };
+
+export { promisify };

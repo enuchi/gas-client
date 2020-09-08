@@ -1,8 +1,8 @@
-import checkAllowList from '../utils/check-allow-list';
-import proxyHandler from '../utils/proxy-handler';
-import { ServerConfig } from '../types/config';
+import { checkAllowList } from '../utils/check-allow-list';
+import { proxyHandler } from '../utils/proxy-handler';
 import { FunctionHost } from '../classes/function-host';
 import { FunctionMap, ServerFunctions } from '../types/functions';
+import { ServerConfig } from '../types/config';
 
 declare const window: AppWindow;
 

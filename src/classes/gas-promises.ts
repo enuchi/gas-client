@@ -1,5 +1,5 @@
-import ignoredFunctionNames from '../utils/ignored-function-names';
-import promisify from '../utils/promisify';
+import { ignoredFunctionNames } from '../utils/ignored-function-names';
+import { promisify } from '../utils/promisify';
 import { FunctionHost } from '../classes/function-host';
 import { FunctionMap, ServerFunctions } from '../types/functions';
 

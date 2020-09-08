@@ -1,1 +1,3 @@
-export default (): boolean => typeof google !== 'undefined' && Boolean(google?.script?.run);
+const isGASEnvironment = (): boolean => typeof google !== 'undefined' && Boolean(google?.script?.run);
+
+export { isGASEnvironment };
