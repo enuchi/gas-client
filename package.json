@@ -1,22 +1,25 @@
 {
-  "name": "gas-client",
+  "name": "@guilhermetod/gas-client",
   "version": "0.1.0",
   "description": "A client-side utility class that can call server-side Google Apps Script functions",
   "main": "build/index.js",
   "files": [
     "build"
   ],
-  "repository": "https://github.com/enuchi/gas-client.git",
+  "repository": "https://github.com/guilhermetod/gas-client.git",
   "author": "Elisha Nuchi",
+  "contributors": [
+    "Guilherme Tod <guilhermetod@gmail.com> (https://github.com/guilhermetod)"
+  ],
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
     "build": "rm -rf build && tsc"
   },
   "bugs": {
-    "url": "https://github.com/enuchi/gas-client/issues"
+    "url": "https://github.com/guilhermetod/gas-client/issues"
   },
-  "homepage": "https://github.com/enuchi/gas-client#readme",
+  "homepage": "https://github.com/guilhermetod/gas-client#readme",
   "keywords": [
     "Google",
     "Apps",
