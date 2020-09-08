@@ -10,16 +10,14 @@ class GASPromises<FM extends FunctionMap> extends FunctionHost<FM> {
   }
 
   private promisifyGASFunctions(): void {
-    // get the names of all of our publicly accessible server functions
     this._serverFunctions = Object.keys(google.script.run).reduce(
       (acc, functionName) =>
-        // filter out the reserved names xx-- we don't want those
         ignoredFunctionNames.includes(functionName)
           ? acc
           : {
               ...acc,
               [functionName]: promisify(functionName),
-            }, // attach Promise-based functions to the serverFunctions property
+            },
       {}
     ) as ServerFunctions<FM>;
   }
