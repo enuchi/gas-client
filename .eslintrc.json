@@ -1,8 +1,8 @@
 {
   "root": true,
-  "parser": "babel-eslint",
-  "extends": ["airbnb-base", "plugin:prettier/recommended"],
-  "plugins": ["babel", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "extends": ["airbnb-typescript/base", "plugin:prettier/recommended"],
+  "plugins": ["@typescript-eslint", "prettier"],
   "env": {
     "browser": true,
     "es6": true
@@ -14,6 +14,7 @@
   },
   "parserOptions": {
     "ecmaVersion": 9,
+    "project": "tsconfig.json",
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
@@ -24,6 +25,8 @@
     "camelcase": "warn",
     "import/prefer-default-export": "warn",
     "import/no-extraneous-dependencies": "warn",
-    "prefer-object-spread": "warn"
+    "prefer-object-spread": "warn",
+    "@typescript-eslint/indent": "off",
+    "no-underscore-dangle": "off"
   }
 }
