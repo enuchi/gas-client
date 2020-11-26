@@ -30,6 +30,7 @@ export default class Server {
       'withLogger',
       'withSuccessHandler',
       'withUserObject',
+      'toJSON',
     ];
 
     this.serverFunctions = {};
