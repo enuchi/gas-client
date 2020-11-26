@@ -1,7 +1,11 @@
 {
   "root": true,
   "parser": "babel-eslint",
-  "extends": ["airbnb-base", "plugin:prettier/recommended"],
+  "extends": [
+    "airbnb-base",
+    "plugin:prettier/recommended",
+    "plugin:jest/recommended"
+  ],
   "plugins": ["babel", "prettier"],
   "env": {
     "browser": true,
@@ -24,6 +28,7 @@
     "camelcase": "warn",
     "import/prefer-default-export": "warn",
     "import/no-extraneous-dependencies": "warn",
-    "prefer-object-spread": "warn"
+    "jest/expect-expect": "off",
+    "no-new": "off"
   }
 }

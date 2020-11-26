@@ -12,7 +12,9 @@
   "license": "MIT",
   "scripts": {
     "prepack": "yarn build",
-    "test": "jest",
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watch",
+    "prebuild": "yarn test",
     "build": "babel src/index.js -d build"
   },
   "bugs": {
