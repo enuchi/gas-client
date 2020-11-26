@@ -82,6 +82,7 @@ export default class Server {
           const { resolve, reject } = window.gasStore[id];
 
           if (status === 'ERROR') {
+            // TODO: return here so resolve doesn't get called on error
             reject(response);
           }
           resolve(response);
