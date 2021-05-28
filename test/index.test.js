@@ -119,28 +119,7 @@ describe('local development gas-client server', () => {
     expect(server).toHaveProperty('serverFunctions');
   });
 
-  test("should not set up local development behavior if process.env.NODE_ENV is not 'development'", () => {
-    global.process.env = {};
-
-    const server = new Server();
-    expect(server.serverFunctions.someFunction).toBe(undefined);
-    expect(window).not.toHaveProperty('gasStore');
-  });
-
-  test("should set up local development behavior if NODE_ENV is 'development'", () => {
-    global.process.env = { NODE_ENV: 'development' };
-
-    const server = new Server();
-    expect(server.serverFunctions.someFunction).not.toBe(undefined);
-    expect(typeof server.serverFunctions.someFunction).toBe('function');
-    expect(window).toHaveProperty('gasStore');
-  });
-
   describe('when set up properly', () => {
-    beforeEach(() => {
-      global.process.env = { NODE_ENV: 'development' };
-    });
-
     test('should add gasStore to window', () => {
       expect(window).not.toHaveProperty('gasStore');
       new Server();
