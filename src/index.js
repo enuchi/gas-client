@@ -52,12 +52,7 @@ export default class Server {
           });
       });
     } catch (err) {
-      if (
-        err.toString() === 'ReferenceError: google is not defined' &&
-        process &&
-        process.env &&
-        process.env.NODE_ENV === 'development'
-      ) {
+      if (typeof google === 'undefined') {
         // we'll store and access the resolve/reject functions here by id
         window.gasStore = {};
 
