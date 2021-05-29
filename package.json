@@ -1,6 +1,6 @@
 {
   "name": "gas-client",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A client-side utility class that can call server-side Google Apps Script functions",
   "main": "build/index.js",
   "files": [
@@ -14,6 +14,7 @@
     "prepack": "yarn build",
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watch",
+    "prebuild": "rm -rf build",
     "build": "babel src/index.js -d build"
   },
   "bugs": {
