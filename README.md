@@ -102,20 +102,7 @@ Note that the `allowedDevelopmentDomains` configuration will be ignored in produ
 
 ### Development mode
 
-Development mode for the `gas-client` helper class will be run when:
-
-1. the `google` client API cannot be found, i.e. an error is thrown with the message "ReferenceError: google is not defined", and
-
-2. a `process.env.NODE_ENV` variable is set to `'development'`. [webpack.DefinePlugin](https://webpack.js.org/plugins/define-plugin/) can be set this up like this:
-
-   ```javascript
-   plugins: [
-     // ...,
-     new webpack.DefinePlugin({
-       'process.env': JSON.stringify({ NODE_ENV: 'development' }),
-     }),
-   ];
-   ```
+Development mode for the `gas-client` helper class will be run when the `google` client API cannot be loaded.
 
 Calling `new Server({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
 
