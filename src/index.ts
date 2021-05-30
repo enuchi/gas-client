@@ -21,5 +21,6 @@ class GASClient<FM extends FunctionMap = {}> {
   }
 }
 
-export { GASClient, ServerFunctions };
+export default GASClient;
+export { ServerFunctions };
 export { DevServerRequestEvent, GASDevServerIFrame } from './types/dev-server';

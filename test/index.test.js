@@ -1,4 +1,4 @@
-import Server from '../src/index';
+import Server from '../build';
 import MockGoogleScriptRunClient from './__utils__/MockGoogleScriptRunClient';
 import 'regenerator-runtime/runtime';
 
@@ -131,11 +131,7 @@ describe('local development gas-client server', () => {
       window.addEventListener = mockAddEventListener;
 
       new Server();
-      expect(mockAddEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function),
-        false
-      );
+      expect(mockAddEventListener).toHaveBeenCalledWith('message', expect.any(Function), false);
     });
 
     test("should post message to window's parent when server function is called and store server function info in gasStore", () => {
@@ -146,9 +142,7 @@ describe('local development gas-client server', () => {
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(Object.entries(window.gasStore).length).toEqual(1);
-      expect(Object.entries(window.gasStore)[0][0]).toEqual(
-        expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/)
-      );
+      expect(Object.entries(window.gasStore)[0][0]).toEqual(expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/));
       expect(Object.entries(window.gasStore)[0][1]).toEqual({
         resolve: expect.any(Function),
         reject: expect.any(Function),
@@ -332,8 +326,7 @@ describe('local development gas-client server', () => {
       });
 
       test('should resolve successfully when allowed development domains string contains origin', () => {
-        const allowedDevelopmentDomains =
-          'https://localhost:8080 https://localhost:3000';
+        const allowedDevelopmentDomains = 'https://localhost:8080 https://localhost:3000';
         const origin = 'https://localhost:3000';
         const shouldPass = true;
 
@@ -347,8 +340,7 @@ describe('local development gas-client server', () => {
       });
 
       test('should resolve successfully when allowed development domains function returns true for origin', () => {
-        const allowedDevelopmentDomains = (origin) =>
-          /localhost:\d+$/.test(origin);
+        const allowedDevelopmentDomains = (origin) => /localhost:\d+$/.test(origin);
         const origin = 'https://localhost:3000';
         const shouldPass = true;
 
