@@ -88,9 +88,8 @@ Now we can use familiar Promises in our client-side code and have easy access to
 ## API
 
 The config object takes:
-`allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development.
-
-`allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that takes in the requesting origin and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
+- `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that takes in the requesting origin and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
+- `parentTargetOrigin` An optional string to specify which parent window domain this client can send communication to. Defaults to own domain for backward compatibility with Google Apps Script Webpack Dev Server development tool (default uses domain where the client is running, e.g. localhost). Can be '*' to allow all parent domains if parent is unknown or variable.
 
 ### Production mode
 
@@ -98,7 +97,7 @@ In the normal Google Apps Script production environment, `new Server()` will hav
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
 
-Note that the `allowedDevelopmentDomains` configuration will be ignored in production, so the same code can and should be used for development and production.
+Note that `allowedDevelopmentDomains` and `parentTargetOrigin` configurations will be ignored in production, so the same code can and should be used for development and production.
 
 ### Development mode
 
