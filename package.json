@@ -1,6 +1,6 @@
 {
   "name": "gas-client",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A client-side utility class that can call server-side Google Apps Script functions",
   "main": "build/index.js",
   "files": [

@@ -165,6 +165,44 @@ describe('local development gas-client server', () => {
       );
     });
 
+    test('should default to post message to target origin of window.location.origin if no parentTargetOrigin is defined', () => {
+      const mockPostMessage = jest.fn();
+      window.parent.postMessage = mockPostMessage;
+      const defaultLocation = window.location.origin;
+
+      const server = new Server({});
+      server.serverFunctions.someFunction('arg1', 'arg2');
+
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: ['arg1', 'arg2'],
+          functionName: 'someFunction',
+          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
+          type: 'REQUEST',
+        }),
+        defaultLocation
+      );
+    });
+
+    test("should set postMessage's target origin to parentTargetOrigin if defined", () => {
+      const mockPostMessage = jest.fn();
+      window.parent.postMessage = mockPostMessage;
+      const parentTargetOrigin = '*';
+
+      const server = new Server({ parentTargetOrigin });
+      server.serverFunctions.someFunction('arg1', 'arg2');
+
+      expect(mockPostMessage).toHaveBeenCalledWith(
+        expect.objectContaining({
+          args: ['arg1', 'arg2'],
+          functionName: 'someFunction',
+          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
+          type: 'REQUEST',
+        }),
+        parentTargetOrigin
+      );
+    });
+
     test('should successfully handle received message and resolve successful server function response', () => {
       const server = new Server({
         allowedDevelopmentDomains: 'https://localhost:3000',
