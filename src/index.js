@@ -21,7 +21,8 @@ export default class Server {
   /**
    * Accepts a single `config` object
    * @param {object} [config] An optional config object for use in development.
-   * @param {string|function} [config.allowedDevelopmentDomains] An optional config to specify which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, this will block functionality in development. Will accept either a space-separated string of allowed subdomains, e.g. `https://localhost:3000 http://localhost:3000` (notice no trailing slash); or a function that takes in the requesting origin should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin)`
+   * @param {string|function} [config.allowedDevelopmentDomains] An optional config to specify which domains are permitted for receiving communication from a parent window. This is a security setting, and if not specified, will block functionality in development. Will accept either a space-separated string of allowed subdomains, e.g. `https://localhost:3000 http://localhost:3000` (notice no trailing slash); or a function that takes in the requesting origin should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin)`
+   * @param {string} [config.parentTargetOrigin] An optional config to specify which parent window domain this client can send communication to. Defaults to own domain for backward compatibility with Google Apps Script Webpack Dev Server development tool (domain where the client is running, e.g. localhost). Can be '*' to allow all parent domains.
    */
   constructor(config = {}) {
     // skip the reserved names: https://developers.google.com/apps-script/guides/html/reference/run
@@ -55,6 +56,10 @@ export default class Server {
       if (typeof google === 'undefined') {
         // we'll store and access the resolve/reject functions here by id
         window.gasStore = {};
+
+        // this domain should be restricted to googleusercontent.com but the subdomain is variable
+        // supports window.location.origin as default for backward compatibility
+        let targetOrigin = config.parentTargetOrigin || window.location.origin;
 
         // set up the message 'receive' handler
         const receiveMessageHandler = (event) => {
@@ -101,8 +106,7 @@ export default class Server {
                   functionName,
                   args: [...args],
                 },
-                // only send messages to our dev server, which should be running on the same origin
-                window.location.origin
+                targetOrigin
               );
               return promise;
             };
