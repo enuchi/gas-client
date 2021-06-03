@@ -6,7 +6,7 @@
   "files": [
     "build"
   ],
-  "repository": "https://github.com/guilhermetod/gas-client.git",
+  "repository": "https://github.com/enuchi/gas-client.git",
   "author": "Elisha Nuchi",
   "contributors": [
     "Guilherme Tod <guilhermetod@gmail.com> (https://github.com/guilhermetod)"
@@ -21,9 +21,9 @@
     "build": "tsc"
   },
   "bugs": {
-    "url": "https://github.com/guilhermetod/gas-client/issues"
+    "url": "https://github.com/enuchi/gas-client/issues"
   },
-  "homepage": "https://github.com/guilhermetod/gas-client#readme",
+  "homepage": "https://github.com/enuchi/gas-client#readme",
   "keywords": [
     "Google",
     "Apps",
