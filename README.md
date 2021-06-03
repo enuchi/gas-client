@@ -16,6 +16,13 @@ Install
 > yarn add gas-client
 ```
 
+<i>Note: versions released before 1.0.0 may have breaking changes</i>
+
+Changes in 1.0.0:
+- targetOrigin is set to '*' due to deprecation of [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) and Google Apps Script environment's variable subdomains
+- main class is exported as named `{ GASClient }` export instead of as default export
+
+
 ```javascript
 import { GASClient } from 'gas-client';
 const { serverFunctions } = new GASClient();
@@ -147,8 +154,8 @@ Now you can have your function names, parameters and return types checked.
 ## API
 
 The config object takes:
+
 - `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that takes in the requesting origin and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
-- `parentTargetOrigin` An optional string to specify which parent window domain this client can send communication to. Defaults to own domain for backward compatibility with Google Apps Script Webpack Dev Server development tool (default uses domain where the client is running, e.g. localhost). Can be '*' to allow all parent domains if parent is unknown or variable.
 
 ### Production mode
 
@@ -165,3 +172,7 @@ Development mode for the `gas-client` helper class will be run when the `google`
 Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
 
 - `serverFunctions`: a proxy object, used for development purposes, that mimics calling `google.script.run`. It will dispatch a message to the parent iframe (our custom Dev Server), which will call an app that actually interacts with the `google.script.run` API. Development mode will also handle the response and resolve or reject based on the response type. See the implementation for details on the event signature.
+
+## Contributors
+
+@guilhermetod - Addition of TypeScript support and general improvements to this project!
