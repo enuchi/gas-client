@@ -16,7 +16,7 @@ const proxyHandler = (target: unknown, functionName: string): ((...args: unknown
         functionName,
         args: [...args],
       },
-      window.location.origin
+      '*'
     );
     return promise;
   };
