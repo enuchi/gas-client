@@ -1,6 +1,6 @@
 import { checkAllowList } from '../utils/check-allow-list';
 import { proxyHandler } from '../utils/proxy-handler';
-import { FunctionHost } from '../classes/function-host';
+import { FunctionHost } from './function-host';
 import { AppWindow } from '../types/dev-server';
 import { FunctionMap, ServerFunctions } from '../types/functions';
 import { ServerConfig } from '../types/config';

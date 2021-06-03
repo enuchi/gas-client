@@ -1,4 +1,4 @@
-import Server from '../build';
+import { GASClient } from '../build';
 import MockGoogleScriptRunClient from './__utils__/MockGoogleScriptRunClient';
 import 'regenerator-runtime/runtime';
 
@@ -52,13 +52,13 @@ describe('production gas-client server', () => {
   });
 
   test('should contain serverFunctions property', () => {
-    const server = new Server();
+    const server = new GASClient();
     expect(server).toHaveProperty('serverFunctions');
   });
 
   test('should promisify server functions and resolve with successful call', async () => {
     global.google.script.run = new MockGoogleScriptRunClient();
-    const server = new Server();
+    const server = new GASClient();
 
     const mockSuccessHandler = jest.fn();
     const mockFailureHandler = jest.fn();
@@ -75,7 +75,7 @@ describe('production gas-client server', () => {
 
   test('should promisify server functions and reject with failed call', async () => {
     global.google.script.run = new MockGoogleScriptRunClient();
-    const server = new Server();
+    const server = new GASClient();
 
     const mockSuccessHandler = jest.fn();
     const mockFailureHandler = jest.fn();
@@ -115,14 +115,14 @@ describe('local development gas-client server', () => {
   });
 
   test('should contain serverFunctions property', () => {
-    const server = new Server();
+    const server = new GASClient();
     expect(server).toHaveProperty('serverFunctions');
   });
 
   describe('when set up properly', () => {
     test('should add gasStore to window', () => {
       expect(window).not.toHaveProperty('gasStore');
-      new Server();
+      new GASClient();
       expect(window).toHaveProperty('gasStore');
     });
 
@@ -130,7 +130,7 @@ describe('local development gas-client server', () => {
       const mockAddEventListener = jest.fn();
       window.addEventListener = mockAddEventListener;
 
-      new Server();
+      new GASClient();
       expect(mockAddEventListener).toHaveBeenCalledWith('message', expect.any(Function), false);
     });
 
@@ -138,7 +138,7 @@ describe('local development gas-client server', () => {
       const mockPostMessage = jest.fn();
       window.parent.postMessage = mockPostMessage;
 
-      const server = new Server();
+      const server = new GASClient();
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(Object.entries(window.gasStore).length).toEqual(1);
@@ -164,7 +164,7 @@ describe('local development gas-client server', () => {
       window.parent.postMessage = mockPostMessage;
       const defaultLocation = window.location.origin;
 
-      const server = new Server({});
+      const server = new GASClient({});
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(mockPostMessage).toHaveBeenCalledWith(
@@ -183,7 +183,7 @@ describe('local development gas-client server', () => {
       window.parent.postMessage = mockPostMessage;
       const parentTargetOrigin = '*';
 
-      const server = new Server({ parentTargetOrigin });
+      const server = new GASClient({ parentTargetOrigin });
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(mockPostMessage).toHaveBeenCalledWith(
@@ -198,7 +198,7 @@ describe('local development gas-client server', () => {
     });
 
     test('should successfully handle received message and resolve successful server function response', () => {
-      const server = new Server({
+      const server = new GASClient({
         allowedDevelopmentDomains: 'https://localhost:3000',
       });
 
@@ -228,7 +228,7 @@ describe('local development gas-client server', () => {
     });
 
     test('should successfully handle received message and reject failed server function response', () => {
-      const server = new Server({
+      const server = new GASClient({
         allowedDevelopmentDomains: 'https://localhost:3000',
       });
 
@@ -264,7 +264,7 @@ describe('local development gas-client server', () => {
         { allowedDevelopmentDomains, origin, responseType = 'RESPONSE' },
         { shouldPass }
       ) => {
-        const server = new Server({
+        const server = new GASClient({
           allowedDevelopmentDomains,
         });
 
