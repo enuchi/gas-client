@@ -42,9 +42,11 @@ describe('google.script.run baseline', () => {
 
 describe('production gas-client server', () => {
   beforeEach(() => {
+    delete window.gasStore;
+    jest.clearAllMocks();
     global.google = {
       script: {
-        run: null,
+        run: {},
       },
     };
 
@@ -54,6 +56,32 @@ describe('production gas-client server', () => {
   test('should contain serverFunctions property', () => {
     const server = new GASClient();
     expect(server).toHaveProperty('serverFunctions');
+  });
+
+  // use existence of window.gasStore to determine if in development mode
+  test('should be in production mode', () => {
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // in production should not add gasStore to window
+    expect(window).not.toHaveProperty('gasStore');
+  });
+  
+  // use existence of window.gasStore to determine if in development mode
+  test('should go to development mode if google is defined but not google.script.run', () => {
+    global.google.script.run = undefined;
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // should go to development mode and store gasStore to window
+    expect(window).toHaveProperty('gasStore');
+  });
+  
+  // use existence of window.gasStore to determine if in development mode
+  test('should go to development mode if google is falsey', () => {
+    global.google = null;
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // should go to development mode and store gasStore to window
+    expect(window).toHaveProperty('gasStore');
   });
 
   test('should promisify server functions and resolve with successful call', async () => {
