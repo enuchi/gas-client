@@ -1,6 +1,6 @@
 import { ignoredFunctionNames } from '../utils/ignored-function-names';
 import { promisify } from '../utils/promisify';
-import { FunctionHost } from '../classes/function-host';
+import { FunctionHost } from './function-host';
 import { FunctionMap, ServerFunctions } from '../types/functions';
 
 class GASPromises<FM extends FunctionMap> extends FunctionHost<FM> {
