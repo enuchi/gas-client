@@ -1,8 +1,8 @@
-# gas-client
+# gas-client v1.0.0
 
 A client-side utility class that uses promises to call server-side Google Apps Script functions. This is a user-friendly wrapper of [google.script.run](https://developers.google.com/apps-script/guides/html/reference/run).
 
-It can also optionally be used in local development and is designed to interact with the [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) used in the [React / Google Apps Script](https://github.com/enuchi/React-Google-Apps-Script) project.
+It can also optionally be used in local development and is designed to work with [React Google Apps Script](https://github.com/enuchi/React-Google-Apps-Script) project.
 
 ---
 
@@ -15,13 +15,6 @@ Install
 # or
 > yarn add gas-client
 ```
-
-<i>Note: versions released before 1.0.0 may have breaking changes</i>
-
-Changes in 1.0.0:
-- targetOrigin is set to '*' due to deprecation of [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) and Google Apps Script environment's variable subdomains
-- main class is exported as named `{ GASClient }` export instead of as default export
-
 
 ```javascript
 import { GASClient } from 'gas-client';
@@ -93,11 +86,11 @@ Now we can use familiar Promises in our client-side code and have easy access to
 
 ---
 
-## [New!] Typescript
+## Typescript
 
 This project now supports typescript!
 
-To use it, simply import your server functions and pass them as a type parameter when creating your server
+To use it, simply import your server functions and pass them as a type parameter when creating your server.
 
 ### On your server-side code
 
@@ -125,7 +118,7 @@ const appendRowsToSheet = (sheetName: string, rowsToAdd: number): void => {
 export { getSheetData, appendRowsToSheet };
 ```
 
-### On your server-side code
+### On your client-side code
 
 ```typescript
 // src/client/add-rows.ts
@@ -155,11 +148,11 @@ Now you can have your function names, parameters and return types checked.
 
 The config object takes:
 
-- `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that takes in the requesting origin and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
+- `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that should expect one argument, the requesting origin, and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
 
 ### Production mode
 
-In the normal Google Apps Script production environment, `new GASClient()` will have one available method:
+In the normal Google Apps Script production environment, a `new GASClient()` instance will have one available method:
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
 
@@ -176,3 +169,10 @@ Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance w
 ## Contributors
 
 @guilhermetod - Addition of TypeScript support and general improvements to this project!
+
+## Change Log
+
+Breaking changes in v1.0.0:
+
+- `targetOrigin` is set to `'*'` due to deprecation of [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) and variability of the parent Google Apps Script environment's subdomains
+- The main class is exported as named `{ GASClient }` export instead of as default export
