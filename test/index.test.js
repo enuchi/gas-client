@@ -155,14 +155,14 @@ describe('local development gas-client server', () => {
           id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
           type: 'REQUEST',
         }),
-        'http://localhost'
+        '*'
       );
     });
 
-    test('should default to post message to target origin of window.location.origin if no parentTargetOrigin is defined', () => {
+    test("should default to post message to target origin of '*'", () => {
       const mockPostMessage = jest.fn();
       window.parent.postMessage = mockPostMessage;
-      const defaultLocation = window.location.origin;
+      const defaultLocation = '*';
 
       const server = new GASClient({});
       server.serverFunctions.someFunction('arg1', 'arg2');
@@ -175,25 +175,6 @@ describe('local development gas-client server', () => {
           type: 'REQUEST',
         }),
         defaultLocation
-      );
-    });
-
-    test("should set postMessage's target origin to parentTargetOrigin if defined", () => {
-      const mockPostMessage = jest.fn();
-      window.parent.postMessage = mockPostMessage;
-      const parentTargetOrigin = '*';
-
-      const server = new GASClient({ parentTargetOrigin });
-      server.serverFunctions.someFunction('arg1', 'arg2');
-
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          args: ['arg1', 'arg2'],
-          functionName: 'someFunction',
-          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
-          type: 'REQUEST',
-        }),
-        parentTargetOrigin
       );
     });
 
