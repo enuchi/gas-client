@@ -1,4 +1,4 @@
-import { GASClient } from '../build';
+import { GASClient } from '../src';
 import MockGoogleScriptRunClient from './__utils__/MockGoogleScriptRunClient';
 import 'regenerator-runtime/runtime';
 

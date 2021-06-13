@@ -4,8 +4,9 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["DOM", "ES2019"],
-    "module": "commonjs",
-    "outDir": "./build/",
+    "module": "ES2020",
+    "outDir": "./build/esm",
+    "moduleResolution": "node",
     "strict": true,
     "target": "es5"
   },
