@@ -1,4 +1,4 @@
-import Server from '../src/index';
+import { GASClient } from '../src';
 import MockGoogleScriptRunClient from './__utils__/MockGoogleScriptRunClient';
 import 'regenerator-runtime/runtime';
 
@@ -42,9 +42,11 @@ describe('google.script.run baseline', () => {
 
 describe('production gas-client server', () => {
   beforeEach(() => {
+    delete window.gasStore;
+    jest.clearAllMocks();
     global.google = {
       script: {
-        run: null,
+        run: {},
       },
     };
 
@@ -52,13 +54,39 @@ describe('production gas-client server', () => {
   });
 
   test('should contain serverFunctions property', () => {
-    const server = new Server();
+    const server = new GASClient();
     expect(server).toHaveProperty('serverFunctions');
+  });
+
+  // use existence of window.gasStore to determine if in development mode
+  test('should be in production mode', () => {
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // in production should not add gasStore to window
+    expect(window).not.toHaveProperty('gasStore');
+  });
+  
+  // use existence of window.gasStore to determine if in development mode
+  test('should go to development mode if google is defined but not google.script.run', () => {
+    global.google.script.run = undefined;
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // should go to development mode and store gasStore to window
+    expect(window).toHaveProperty('gasStore');
+  });
+  
+  // use existence of window.gasStore to determine if in development mode
+  test('should go to development mode if google is falsey', () => {
+    global.google = null;
+    expect(window).not.toHaveProperty('gasStore');
+    new GASClient();
+    // should go to development mode and store gasStore to window
+    expect(window).toHaveProperty('gasStore');
   });
 
   test('should promisify server functions and resolve with successful call', async () => {
     global.google.script.run = new MockGoogleScriptRunClient();
-    const server = new Server();
+    const server = new GASClient();
 
     const mockSuccessHandler = jest.fn();
     const mockFailureHandler = jest.fn();
@@ -75,7 +103,7 @@ describe('production gas-client server', () => {
 
   test('should promisify server functions and reject with failed call', async () => {
     global.google.script.run = new MockGoogleScriptRunClient();
-    const server = new Server();
+    const server = new GASClient();
 
     const mockSuccessHandler = jest.fn();
     const mockFailureHandler = jest.fn();
@@ -115,14 +143,14 @@ describe('local development gas-client server', () => {
   });
 
   test('should contain serverFunctions property', () => {
-    const server = new Server();
+    const server = new GASClient();
     expect(server).toHaveProperty('serverFunctions');
   });
 
   describe('when set up properly', () => {
     test('should add gasStore to window', () => {
       expect(window).not.toHaveProperty('gasStore');
-      new Server();
+      new GASClient();
       expect(window).toHaveProperty('gasStore');
     });
 
@@ -130,25 +158,19 @@ describe('local development gas-client server', () => {
       const mockAddEventListener = jest.fn();
       window.addEventListener = mockAddEventListener;
 
-      new Server();
-      expect(mockAddEventListener).toHaveBeenCalledWith(
-        'message',
-        expect.any(Function),
-        false
-      );
+      new GASClient();
+      expect(mockAddEventListener).toHaveBeenCalledWith('message', expect.any(Function), false);
     });
 
     test("should post message to window's parent when server function is called and store server function info in gasStore", () => {
       const mockPostMessage = jest.fn();
       window.parent.postMessage = mockPostMessage;
 
-      const server = new Server();
+      const server = new GASClient();
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(Object.entries(window.gasStore).length).toEqual(1);
-      expect(Object.entries(window.gasStore)[0][0]).toEqual(
-        expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/)
-      );
+      expect(Object.entries(window.gasStore)[0][0]).toEqual(expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/));
       expect(Object.entries(window.gasStore)[0][1]).toEqual({
         resolve: expect.any(Function),
         reject: expect.any(Function),
@@ -161,16 +183,16 @@ describe('local development gas-client server', () => {
           id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
           type: 'REQUEST',
         }),
-        'http://localhost'
+        '*'
       );
     });
 
-    test('should default to post message to target origin of window.location.origin if no parentTargetOrigin is defined', () => {
+    test("should default to post message to target origin of '*'", () => {
       const mockPostMessage = jest.fn();
       window.parent.postMessage = mockPostMessage;
-      const defaultLocation = window.location.origin;
+      const defaultLocation = '*';
 
-      const server = new Server({});
+      const server = new GASClient({});
       server.serverFunctions.someFunction('arg1', 'arg2');
 
       expect(mockPostMessage).toHaveBeenCalledWith(
@@ -184,27 +206,8 @@ describe('local development gas-client server', () => {
       );
     });
 
-    test("should set postMessage's target origin to parentTargetOrigin if defined", () => {
-      const mockPostMessage = jest.fn();
-      window.parent.postMessage = mockPostMessage;
-      const parentTargetOrigin = '*';
-
-      const server = new Server({ parentTargetOrigin });
-      server.serverFunctions.someFunction('arg1', 'arg2');
-
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          args: ['arg1', 'arg2'],
-          functionName: 'someFunction',
-          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
-          type: 'REQUEST',
-        }),
-        parentTargetOrigin
-      );
-    });
-
     test('should successfully handle received message and resolve successful server function response', () => {
-      const server = new Server({
+      const server = new GASClient({
         allowedDevelopmentDomains: 'https://localhost:3000',
       });
 
@@ -234,7 +237,7 @@ describe('local development gas-client server', () => {
     });
 
     test('should successfully handle received message and reject failed server function response', () => {
-      const server = new Server({
+      const server = new GASClient({
         allowedDevelopmentDomains: 'https://localhost:3000',
       });
 
@@ -270,7 +273,7 @@ describe('local development gas-client server', () => {
         { allowedDevelopmentDomains, origin, responseType = 'RESPONSE' },
         { shouldPass }
       ) => {
-        const server = new Server({
+        const server = new GASClient({
           allowedDevelopmentDomains,
         });
 
@@ -332,8 +335,7 @@ describe('local development gas-client server', () => {
       });
 
       test('should resolve successfully when allowed development domains string contains origin', () => {
-        const allowedDevelopmentDomains =
-          'https://localhost:8080 https://localhost:3000';
+        const allowedDevelopmentDomains = 'https://localhost:8080 https://localhost:3000';
         const origin = 'https://localhost:3000';
         const shouldPass = true;
 
@@ -347,8 +349,7 @@ describe('local development gas-client server', () => {
       });
 
       test('should resolve successfully when allowed development domains function returns true for origin', () => {
-        const allowedDevelopmentDomains = (origin) =>
-          /localhost:\d+$/.test(origin);
+        const allowedDevelopmentDomains = (origin) => /localhost:\d+$/.test(origin);
         const origin = 'https://localhost:3000';
         const shouldPass = true;
 

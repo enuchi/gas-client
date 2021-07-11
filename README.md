@@ -1,14 +1,15 @@
-# gas-client
+# gas-client v1.0.0
 
 A client-side utility class that uses promises to call server-side Google Apps Script functions. This is a user-friendly wrapper of [google.script.run](https://developers.google.com/apps-script/guides/html/reference/run).
 
-It can also optionally be used in local development and is designed to interact with the [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) used in the [React / Google Apps Script](https://github.com/enuchi/React-Google-Apps-Script) project.
+It can also optionally be used in local development and is designed to work with [React Google Apps Script](https://github.com/enuchi/React-Google-Apps-Script) project.
 
 ---
 
 ## Installation
 
 Install
+
 ```bash
 > npm install gas-client
 # or
@@ -16,8 +17,8 @@ Install
 ```
 
 ```javascript
-import Server from 'gas-client';
-const { serverFunctions } = new Server();
+import { GASClient } from 'gas-client';
+const { serverFunctions } = new GASClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -31,9 +32,9 @@ serverFunctions
 To use with [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server), pass in a config object with `allowedDevelopmentDomains` indicating the localhost port you are using. This setting will be ignored in production (see below for more details).
 
 ```javascript
-import Server from 'gas-client';
+import { GASClient } from 'gas-client';
 
-const { serverFunctions } = new Server({
+const { serverFunctions } = new GASClient({
   allowedDevelopmentDomains: 'https://localhost:3000',
 });
 
@@ -61,8 +62,8 @@ google.script.run
 
 ```javascript
 // With this package we can now do this:
-import Server from 'gas-client';
-const { serverFunctions } = new Server();
+import { GASClient } from 'gas-client';
+const { serverFunctions } = new GASClient();
 
 // We now have access to all our server functions, which return promises
 serverFunctions
@@ -85,15 +86,73 @@ Now we can use familiar Promises in our client-side code and have easy access to
 
 ---
 
+## Typescript
+
+This project now supports typescript!
+
+To use it, simply import your server functions and pass them as a type parameter when creating your server.
+
+### On your server-side code
+
+```typescript
+// src/server/index.ts
+
+interface SheetData {
+  name: string;
+  numOfRows: number;
+}
+
+const getSheetData = (): SheetData => {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  return {
+    name: sheet.getName(),
+    numOfRows: sheet.getMaxRows(),
+  };
+};
+
+const appendRowsToSheet = (sheetName: string, rowsToAdd: number): void => {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  sheet.insertRowsAfter(sheet.getMaxRows(), rowsToAdd);
+};
+
+export { getSheetData, appendRowsToSheet };
+```
+
+### On your client-side code
+
+```typescript
+// src/client/add-rows.ts
+
+import { GASClient } from 'gas-client';
+import { showUserPrompt } from './show-user-prompt';
+import * as server from '../server';
+
+const { serverFunctions } = new GASClient<typeof server>();
+
+const promptUser = async (): Promise<void> => {
+  const { name, numOfRows } = await serverFunctions.getSheetData();
+  const response = await showUserPrompt(`Sheet ${name} has ${numOfRows} rows. How many would you like to add?`);
+  serverFunctions.appendRowsToSheet(name, numOfRows);
+};
+```
+
+Now you can have your function names, parameters and return types checked.
+
+### Get better IDE support and catch errors ahead!
+
+![Get-better-IDE](https://i.imgur.com/gPmOPqX.gif)
+
+---
+
 ## API
 
 The config object takes:
-- `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that takes in the requesting origin and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
-- `parentTargetOrigin` An optional string to specify which parent window domain this client can send communication to. Defaults to own domain for backward compatibility with Google Apps Script Webpack Dev Server development tool (default uses domain where the client is running, e.g. localhost). Can be '*' to allow all parent domains if parent is unknown or variable.
+
+- `allowedDevelopmentDomains`: A config to specifiy which domains are permitted for communication with Google Apps Script Webpack Dev Server development tool. This is a security setting, and if not specified, will block functionality in development. `allowedDevelopmentDomains` will accept either a space-separated string of allowed subdomains, e.g. `'https://localhost:3000 https://localhost:8080'` (notice no trailing slashes); or a function that should expect one argument, the requesting origin, and should return `true` to allow communication, e.g. `(origin) => /localhost:\d+$/.test(origin);`
 
 ### Production mode
 
-In the normal Google Apps Script production environment, `new Server()` will have one available method:
+In the normal Google Apps Script production environment, a `new GASClient()` instance will have one available method:
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
 
@@ -103,6 +162,17 @@ Note that `allowedDevelopmentDomains` and `parentTargetOrigin` configurations wi
 
 Development mode for the `gas-client` helper class will be run when the `google` client API cannot be loaded.
 
-Calling `new Server({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
+Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
 
 - `serverFunctions`: a proxy object, used for development purposes, that mimics calling `google.script.run`. It will dispatch a message to the parent iframe (our custom Dev Server), which will call an app that actually interacts with the `google.script.run` API. Development mode will also handle the response and resolve or reject based on the response type. See the implementation for details on the event signature.
+
+## Contributors
+
+@guilhermetod - Addition of TypeScript support and general improvements to this project!
+
+## Change Log
+
+Breaking changes in v1.0.0:
+
+- `targetOrigin` is set to `'*'` due to deprecation of [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) and variability of the parent Google Apps Script environment's subdomains
+- The main class is exported as named `{ GASClient }` export instead of as default export
