@@ -6,7 +6,7 @@
   "typings": "dist/index.d.ts",
   "files": [
     "src",
-    "build"
+    "dist"
   ],
   "repository": "https://github.com/enuchi/gas-client.git",
   "author": "Elisha Nuchi",
