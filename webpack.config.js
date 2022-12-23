@@ -8,8 +8,10 @@ module.exports = {
     lib: './src/index',
   },
   output: {
-    library: 'lib',
-    libraryTarget: 'umd',
+    library: {
+      type: 'umd',
+    },
+    // libraryTarget: 'umd',
     filename: 'index.js',
   },
   resolve: {
