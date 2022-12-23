@@ -9,10 +9,12 @@ module.exports = {
   },
   output: {
     library: {
+      name: 'GASClient',
       type: 'umd',
     },
     // libraryTarget: 'umd',
     filename: 'index.js',
+    // globalObject: 'this'
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
