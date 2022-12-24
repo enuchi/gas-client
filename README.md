@@ -172,6 +172,10 @@ Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance w
 
 ## Change Log
 
+v1.1.0
+- Uses webpack + ts-loader for build and publish as UMD build
+- Renames build folder from `build` to `dist`
+
 Breaking changes in v1.0.0:
 
 - `targetOrigin` is set to `'*'` due to deprecation of [Google Apps Script Dev Server](https://github.com/enuchi/Google-Apps-Script-Webpack-Dev-Server) and variability of the parent Google Apps Script environment's subdomains
