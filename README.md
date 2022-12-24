@@ -1,4 +1,4 @@
-# gas-client v1.0.0
+# gas-client v1.1.0
 
 A client-side utility class that uses promises to call server-side Google Apps Script functions. This is a user-friendly wrapper of [google.script.run](https://developers.google.com/apps-script/guides/html/reference/run).
 
@@ -171,6 +171,10 @@ Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance w
 @guilhermetod - Addition of TypeScript support and general improvements to this project!
 
 ## Change Log
+
+v1.1.0
+- Uses webpack + ts-loader for build and publish as UMD build
+- Renames build folder from `build` to `dist`
 
 Breaking changes in v1.0.0:
 
