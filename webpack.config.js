@@ -1,9 +1,5 @@
 module.exports = {
-  // optimization: {
-  //   minimize: false,
-  // },
   mode: 'production',
-  // devtool: 'inline-source-map',
   entry: {
     lib: './src/index',
   },
@@ -12,9 +8,7 @@ module.exports = {
       name: 'GASClient',
       type: 'umd',
     },
-    // libraryTarget: 'umd',
     filename: 'index.js',
-    // globalObject: 'this'
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
