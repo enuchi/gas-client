@@ -24,11 +24,14 @@ interface DevServerResponse extends GasFunctionData {
 }
 
 interface DevServerContentWindow<Origin extends 'GAS' | 'App'> extends Window {
-  postMessage: (
-    message: Origin extends 'GAS' ? DevServerResponse : DevServerRequest,
-    targetOrigin: string,
-    transfer?: Transferable[]
-  ) => void;
+  postMessage: {
+    (
+      message: Origin extends 'GAS' ? DevServerResponse : DevServerRequest,
+      targetOrigin: string,
+      transfer?: Transferable[]
+    ): void;
+    (message: any, options?: WindowPostMessageOptions): void;
+  };
 }
 
 interface AppWindow extends Window {
