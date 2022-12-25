@@ -172,6 +172,9 @@ Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance w
 
 ## Change Log
 
+v1.1.1
+- Upgrade all packages
+
 v1.1.0
 - Uses webpack + ts-loader for build and publish as UMD build
 - Renames build folder from `build` to `dist`
