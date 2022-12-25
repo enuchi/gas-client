@@ -1,4 +1,4 @@
-# gas-client v1.1.0
+# gas-client
 
 A client-side utility class that uses promises to call server-side Google Apps Script functions. This is a user-friendly wrapper of [google.script.run](https://developers.google.com/apps-script/guides/html/reference/run).
 
