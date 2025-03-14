@@ -38,7 +38,6 @@ export {
   GASDevServerIFrame,
   MessageType,
   ResponseStatus,
-  OriginType,
   GASStore,
   DevServerRequest,
   DevServerResponse,
