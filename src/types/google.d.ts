@@ -1,7 +1,7 @@
 // Google Apps Script methods available to scripts
 // This is a very slightly modified version of https://gist.githubusercontent.com/DominikPalo/bea3d958877566fe24ebe5ee1688d976/raw/e03a426c815f7f06bd3072213e732ab7f42d82c7/google.script.d.ts
 // It simply replaces "any" types with "unknown" and adds the "withLogger" method to the existing gist.
-export declare namespace google {
+declare namespace google {
   namespace script {
     interface IRun {
       [serverSideFunction: string]: Function;

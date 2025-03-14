@@ -45,5 +45,3 @@ export {
   DevServerContentWindow,
   AppWindow,
 } from './types/dev-server';
-
-export { google } from './types/google';

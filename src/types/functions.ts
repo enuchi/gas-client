@@ -1,5 +1,3 @@
-import { google } from "./google";
-
 type FunctionMap = Record<string, (...args: any[]) => any>;
 
 type Promisified<F extends (...args: any[]) => any> = (...params: Parameters<F>) => Promise<ReturnType<F>>;
@@ -15,10 +13,24 @@ type UnrecognizedServerFunctions = {
 type ServerFunctions<FM extends FunctionMap> = RecognizedServerFunctions<FM> & UnrecognizedServerFunctions;
 
 type HostFunctions = {
-  close: typeof google.script.host.close;
-  setHeight: typeof google.script.host.setHeight;
-  setWidth: typeof google.script.host.setWidth;
-  focusEditor: typeof google.script.host.editor.focus;
+  /**
+   * Closes the current dialog or sidebar.
+   */
+  close: () => void;
+  /**
+   * Sets the height of the current dialog.
+   * @param height the new height, in pixels
+   */
+  setHeight: (height: number) => void;
+  /**
+   * Sets the width of the current dialog.
+   * @param width the new width, in pixels
+   */
+  setWidth: (width: number) => void;
+  /**
+   * Switches browser focus from the dialog or sidebar to the Google Docs, Sheets, or Forms editor.
+   */
+  focusEditor: () => void;
 };
 
 export { FunctionMap, ServerFunctions, HostFunctions };

@@ -1,4 +1,3 @@
-import { google } from '../types/google';
 import { ScriptHostProvider } from './script-host-provider';
 
 class ScriptHostFunctions extends ScriptHostProvider {
