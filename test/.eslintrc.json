@@ -26,7 +26,7 @@
   "rules": {
     "prettier/prettier": "error",
     "camelcase": "warn",
-    "import/prefer-default-export": "warn",
+    "import/prefer-default-export": "off",
     "import/no-extraneous-dependencies": "warn",
     "jest/expect-expect": "off",
     "no-new": "off"

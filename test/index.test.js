@@ -1,4 +1,4 @@
-import { GASClient } from '../src';
+import { GASClient, MessageType, ResponseStatus } from '../src';
 import MockGoogleScriptRunClient from './__utils__/MockGoogleScriptRunClient';
 import 'regenerator-runtime/runtime';
 
@@ -47,6 +47,9 @@ describe('production gas-client server', () => {
     global.google = {
       script: {
         run: {},
+        host: {
+          editor: {},
+        },
       },
     };
 
@@ -58,6 +61,11 @@ describe('production gas-client server', () => {
     expect(server).toHaveProperty('serverFunctions');
   });
 
+  test('should contain scriptHostFunctions property', () => {
+    const server = new GASClient();
+    expect(server).toHaveProperty('scriptHostFunctions');
+  });
+
   // use existence of window.gasStore to determine if in development mode
   test('should be in production mode', () => {
     expect(window).not.toHaveProperty('gasStore');
@@ -65,7 +73,7 @@ describe('production gas-client server', () => {
     // in production should not add gasStore to window
     expect(window).not.toHaveProperty('gasStore');
   });
-  
+
   // use existence of window.gasStore to determine if in development mode
   test('should go to development mode if google is defined but not google.script.run', () => {
     global.google.script.run = undefined;
@@ -74,7 +82,7 @@ describe('production gas-client server', () => {
     // should go to development mode and store gasStore to window
     expect(window).toHaveProperty('gasStore');
   });
-  
+
   // use existence of window.gasStore to determine if in development mode
   test('should go to development mode if google is falsey', () => {
     global.google = null;
@@ -117,8 +125,25 @@ describe('production gas-client server', () => {
     expect(mockSuccessHandler).not.toHaveBeenCalled();
     expect(mockFailureHandler).toHaveBeenCalled();
   });
-});
 
+  test('should call google.script.host.close in production', () => {
+    global.google.script.host.close = jest.fn();
+
+    const server = new GASClient();
+    server.scriptHostFunctions.close();
+
+    expect(global.google.script.host.close).toHaveBeenCalled();
+  });
+
+  test('should call google.script.host.editor.focus in production', () => {
+    global.google.script.host.editor.focus = jest.fn();
+
+    const server = new GASClient();
+    server.scriptHostFunctions.focusEditor();
+
+    expect(global.google.script.host.editor.focus).toHaveBeenCalled();
+  });
+});
 describe('local development gas-client server', () => {
   const eventHandlersStore = [];
   const originalWindowAddEventListener = window.addEventListener;
@@ -147,6 +172,11 @@ describe('local development gas-client server', () => {
     expect(server).toHaveProperty('serverFunctions');
   });
 
+  test('should contain scriptHostFunctions property', () => {
+    const server = new GASClient();
+    expect(server).toHaveProperty('scriptHostFunctions');
+  });
+
   describe('when set up properly', () => {
     test('should add gasStore to window', () => {
       expect(window).not.toHaveProperty('gasStore');
@@ -162,119 +192,56 @@ describe('local development gas-client server', () => {
       expect(mockAddEventListener).toHaveBeenCalledWith('message', expect.any(Function), false);
     });
 
-    test("should post message to window's parent when server function is called and store server function info in gasStore", () => {
-      const mockPostMessage = jest.fn();
-      window.parent.postMessage = mockPostMessage;
+    describe('server functions', () => {
+      test("should post message to window's parent when server function is called and store server function info in gasStore", () => {
+        const mockPostMessage = jest.fn();
+        window.parent.postMessage = mockPostMessage;
 
-      const server = new GASClient();
-      server.serverFunctions.someFunction('arg1', 'arg2');
+        const server = new GASClient();
+        server.serverFunctions.someFunction('arg1', 'arg2');
 
-      expect(Object.entries(window.gasStore).length).toEqual(1);
-      expect(Object.entries(window.gasStore)[0][0]).toEqual(expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/));
-      expect(Object.entries(window.gasStore)[0][1]).toEqual({
-        resolve: expect.any(Function),
-        reject: expect.any(Function),
+        expect(Object.entries(window.gasStore).length).toEqual(1);
+        expect(Object.entries(window.gasStore)[0][0]).toEqual(
+          expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/)
+        );
+        expect(Object.entries(window.gasStore)[0][1]).toEqual({
+          resolve: expect.any(Function),
+          reject: expect.any(Function),
+        });
+
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            args: ['arg1', 'arg2'],
+            functionName: 'someFunction',
+            id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
+            type: 'REQUEST',
+          }),
+          '*'
+        );
       });
 
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          args: ['arg1', 'arg2'],
-          functionName: 'someFunction',
-          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
-          type: 'REQUEST',
-        }),
-        '*'
-      );
-    });
+      test("should default to post message to target origin of '*'", () => {
+        const mockPostMessage = jest.fn();
+        window.parent.postMessage = mockPostMessage;
+        const defaultLocation = '*';
 
-    test("should default to post message to target origin of '*'", () => {
-      const mockPostMessage = jest.fn();
-      window.parent.postMessage = mockPostMessage;
-      const defaultLocation = '*';
+        const server = new GASClient({});
+        server.serverFunctions.someFunction('arg1', 'arg2');
 
-      const server = new GASClient({});
-      server.serverFunctions.someFunction('arg1', 'arg2');
-
-      expect(mockPostMessage).toHaveBeenCalledWith(
-        expect.objectContaining({
-          args: ['arg1', 'arg2'],
-          functionName: 'someFunction',
-          id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
-          type: 'REQUEST',
-        }),
-        defaultLocation
-      );
-    });
-
-    test('should successfully handle received message and resolve successful server function response', () => {
-      const server = new GASClient({
-        allowedDevelopmentDomains: 'https://localhost:3000',
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            args: ['arg1', 'arg2'],
+            functionName: 'someFunction',
+            id: expect.stringMatching(/^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$/), // just simple check this is a uuid
+            type: 'REQUEST',
+          }),
+          defaultLocation
+        );
       });
 
-      server.serverFunctions.someFunction();
-      const [uuid] = Object.entries(window.gasStore)[0];
-      const mockResolve = jest.fn();
-      const mockReject = jest.fn();
-
-      // replace stored resolve/reject functions with mocks
-      window.gasStore[uuid].resolve = mockResolve;
-      window.gasStore[uuid].reject = mockReject;
-
-      const eventBody = {
-        data: {
-          type: 'RESPONSE',
-          response: "server function's response",
-          status: 'SUCCESS',
-          id: uuid,
-        },
-        origin: 'https://localhost:3000',
-      };
-      const messageEvent = new MessageEvent('message', eventBody);
-      window.dispatchEvent(messageEvent);
-
-      expect(mockResolve).toHaveBeenCalledWith("server function's response");
-      expect(mockReject).not.toHaveBeenCalled();
-    });
-
-    test('should successfully handle received message and reject failed server function response', () => {
-      const server = new GASClient({
-        allowedDevelopmentDomains: 'https://localhost:3000',
-      });
-
-      server.serverFunctions.someFunction();
-      const [uuid] = Object.entries(window.gasStore)[0];
-      const mockResolve = jest.fn();
-      const mockReject = jest.fn();
-
-      // replace stored resolve/reject functions with mocks
-      window.gasStore[uuid].resolve = mockResolve;
-      window.gasStore[uuid].reject = mockReject;
-
-      const eventBody = {
-        data: {
-          type: 'RESPONSE',
-          response: new Error('there was an issue'),
-          status: 'ERROR',
-          id: uuid,
-        },
-        origin: 'https://localhost:3000',
-      };
-      const messageEvent = new MessageEvent('message', eventBody);
-      window.dispatchEvent(messageEvent);
-
-      expect(mockReject).toHaveBeenCalledWith(new Error('there was an issue'));
-
-      // TODO: Update code to return with reject error
-      expect(mockResolve).toHaveBeenCalledWith(new Error('there was an issue'));
-    });
-
-    describe('when using allowed development domains config', () => {
-      const testSuccessfulServerCall = (
-        { allowedDevelopmentDomains, origin, responseType = 'RESPONSE' },
-        { shouldPass }
-      ) => {
+      test('should successfully handle received message and resolve successful server function response', () => {
         const server = new GASClient({
-          allowedDevelopmentDomains,
+          allowedDevelopmentDomains: 'https://localhost:3000',
         });
 
         server.serverFunctions.someFunction();
@@ -288,121 +255,277 @@ describe('local development gas-client server', () => {
 
         const eventBody = {
           data: {
-            type: responseType,
+            type: 'RESPONSE',
             response: "server function's response",
             status: 'SUCCESS',
             id: uuid,
           },
-          origin,
+          origin: 'https://localhost:3000',
         };
         const messageEvent = new MessageEvent('message', eventBody);
         window.dispatchEvent(messageEvent);
 
-        if (shouldPass) {
-          expect(mockResolve).toHaveBeenCalled();
-        } else {
-          expect(mockReject).not.toHaveBeenCalled();
-          expect(mockResolve).not.toHaveBeenCalled();
-        }
-      };
+        expect(mockResolve).toHaveBeenCalledWith("server function's response");
+        expect(mockReject).not.toHaveBeenCalled();
+      });
+      
+      test('should support importing request/response types and successfully handle received message and resolve successful server function response', () => {
+        const server = new GASClient({
+          allowedDevelopmentDomains: 'https://localhost:3000',
+        });
 
-      test('should resolve successfully when allowed development domains equals origin', () => {
-        const allowedDevelopmentDomains = 'https://localhost:3000';
-        const origin = 'https://localhost:3000';
-        const shouldPass = true;
+        server.serverFunctions.someFunction();
+        const [uuid] = Object.entries(window.gasStore)[0];
+        const mockResolve = jest.fn();
+        const mockReject = jest.fn();
 
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
+        // replace stored resolve/reject functions with mocks
+        window.gasStore[uuid].resolve = mockResolve;
+        window.gasStore[uuid].reject = mockReject;
+
+        const eventBody = {
+          data: {
+            type: MessageType.RESPONSE,
+            response: "server function's response",
+            status: ResponseStatus.SUCCESS,
+            id: uuid,
           },
+          origin: 'https://localhost:3000',
+        };
+        const messageEvent = new MessageEvent('message', eventBody);
+        window.dispatchEvent(messageEvent);
+
+        expect(mockResolve).toHaveBeenCalledWith("server function's response");
+        expect(mockReject).not.toHaveBeenCalled();
+      });
+
+      test('should successfully handle received message and reject failed server function response', () => {
+        const server = new GASClient({
+          allowedDevelopmentDomains: 'https://localhost:3000',
+        });
+
+        server.serverFunctions.someFunction();
+        const [uuid] = Object.entries(window.gasStore)[0];
+        const mockResolve = jest.fn();
+        const mockReject = jest.fn();
+
+        // replace stored resolve/reject functions with mocks
+        window.gasStore[uuid].resolve = mockResolve;
+        window.gasStore[uuid].reject = mockReject;
+
+        const eventBody = {
+          data: {
+            type: 'RESPONSE',
+            response: new Error('there was an issue'),
+            status: 'ERROR',
+            id: uuid,
+          },
+          origin: 'https://localhost:3000',
+        };
+        const messageEvent = new MessageEvent('message', eventBody);
+        window.dispatchEvent(messageEvent);
+
+        expect(mockReject).toHaveBeenCalledWith(new Error('there was an issue'));
+
+        // TODO: Update code to return with reject error
+        expect(mockResolve).toHaveBeenCalledWith(new Error('there was an issue'));
+      });
+
+      describe('when using allowed development domains config', () => {
+        const testSuccessfulServerCall = (
+          { allowedDevelopmentDomains, origin, responseType = 'RESPONSE' },
           { shouldPass }
+        ) => {
+          const server = new GASClient({
+            allowedDevelopmentDomains,
+          });
+
+          server.serverFunctions.someFunction();
+          const [uuid] = Object.entries(window.gasStore)[0];
+          const mockResolve = jest.fn();
+          const mockReject = jest.fn();
+
+          // replace stored resolve/reject functions with mocks
+          window.gasStore[uuid].resolve = mockResolve;
+          window.gasStore[uuid].reject = mockReject;
+
+          const eventBody = {
+            data: {
+              type: responseType,
+              response: "server function's response",
+              status: 'SUCCESS',
+              id: uuid,
+            },
+            origin,
+          };
+          const messageEvent = new MessageEvent('message', eventBody);
+          window.dispatchEvent(messageEvent);
+
+          if (shouldPass) {
+            expect(mockResolve).toHaveBeenCalled();
+          } else {
+            expect(mockReject).not.toHaveBeenCalled();
+            expect(mockResolve).not.toHaveBeenCalled();
+          }
+        };
+
+        test('should resolve successfully when allowed development domains equals origin', () => {
+          const allowedDevelopmentDomains = 'https://localhost:3000';
+          const origin = 'https://localhost:3000';
+          const shouldPass = true;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test("should not resolve successfully when allowed development domains doesn't equal origin", () => {
+          const allowedDevelopmentDomains = 'https://localhost:8080';
+          const origin = 'https://localhost:3000';
+          const shouldPass = false;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test('should resolve successfully when allowed development domains string contains origin', () => {
+          const allowedDevelopmentDomains = 'https://localhost:8080 https://localhost:3000';
+          const origin = 'https://localhost:3000';
+          const shouldPass = true;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test('should resolve successfully when allowed development domains function returns true for origin', () => {
+          const allowedDevelopmentDomains = (origin) => /localhost:\d+$/.test(origin);
+          const origin = 'https://localhost:3000';
+          const shouldPass = true;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test('should not resolve successfully when allowed development domains function does not return true', () => {
+          const allowedDevelopmentDomains = () => false;
+          const origin = 'https://localhost:3000';
+          const shouldPass = false;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test('should not resolve successfully when allowed development domains is undefined', () => {
+          const allowedDevelopmentDomains = undefined;
+          const origin = 'https://localhost:3000';
+          const shouldPass = false;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+            },
+            { shouldPass }
+          );
+        });
+
+        test("should not resolve successfully when response type is not 'RESPONSE'", () => {
+          const allowedDevelopmentDomains = 'https://localhost:3000';
+          const origin = 'https://localhost:3000';
+          const responseType = 'NOT RESPONSE';
+          const shouldPass = false;
+
+          testSuccessfulServerCall(
+            {
+              allowedDevelopmentDomains,
+              origin,
+              responseType,
+            },
+            { shouldPass }
+          );
+        });
+      });
+    });
+
+    describe('script host functions', () => {
+      test('should post close message to window.parent in development', () => {
+        const mockPostMessage = jest.fn();
+        window.parent.postMessage = mockPostMessage;
+
+        const server = new GASClient();
+        server.scriptHostFunctions.close();
+
+        expect(Object.entries(window.gasStore).length).toEqual(0);
+
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            args: [],
+            functionName: 'close',
+            type: 'SCRIPT_HOST_FUNCTION_REQUEST',
+          }),
+          '*'
         );
       });
 
-      test("should not resolve successfully when allowed development domains doesn't equal origin", () => {
-        const allowedDevelopmentDomains = 'https://localhost:8080';
-        const origin = 'https://localhost:3000';
-        const shouldPass = false;
+      test('should use enum exports to close message to window.parent in development', () => {
+        const mockPostMessage = jest.fn();
+        window.parent.postMessage = mockPostMessage;
 
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-          },
-          { shouldPass }
+        const server = new GASClient();
+        server.scriptHostFunctions.close();
+
+        expect(Object.entries(window.gasStore).length).toEqual(0);
+
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            args: [],
+            functionName: 'close',
+            type: MessageType.SCRIPT_HOST_FUNCTION_REQUEST,
+          }),
+          '*'
         );
       });
 
-      test('should resolve successfully when allowed development domains string contains origin', () => {
-        const allowedDevelopmentDomains = 'https://localhost:8080 https://localhost:3000';
-        const origin = 'https://localhost:3000';
-        const shouldPass = true;
+      test('should post setWidth message to window.parent in development', () => {
+        const mockPostMessage = jest.fn();
+        window.parent.postMessage = mockPostMessage;
 
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-          },
-          { shouldPass }
-        );
-      });
+        const server = new GASClient();
+        server.scriptHostFunctions.setWidth(100);
 
-      test('should resolve successfully when allowed development domains function returns true for origin', () => {
-        const allowedDevelopmentDomains = (origin) => /localhost:\d+$/.test(origin);
-        const origin = 'https://localhost:3000';
-        const shouldPass = true;
+        expect(Object.entries(window.gasStore).length).toEqual(0);
 
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-          },
-          { shouldPass }
-        );
-      });
-
-      test('should not resolve successfully when allowed development domains function does not return true', () => {
-        const allowedDevelopmentDomains = () => false;
-        const origin = 'https://localhost:3000';
-        const shouldPass = false;
-
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-          },
-          { shouldPass }
-        );
-      });
-
-      test('should not resolve successfully when allowed development domains is undefined', () => {
-        const allowedDevelopmentDomains = undefined;
-        const origin = 'https://localhost:3000';
-        const shouldPass = false;
-
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-          },
-          { shouldPass }
-        );
-      });
-
-      test("should not resolve successfully when response type is not 'RESPONSE'", () => {
-        const allowedDevelopmentDomains = 'https://localhost:3000';
-        const origin = 'https://localhost:3000';
-        const responseType = 'NOT RESPONSE';
-        const shouldPass = false;
-
-        testSuccessfulServerCall(
-          {
-            allowedDevelopmentDomains,
-            origin,
-            responseType,
-          },
-          { shouldPass }
+        expect(mockPostMessage).toHaveBeenCalledWith(
+          expect.objectContaining({
+            args: [100],
+            functionName: 'setWidth',
+            type: 'SCRIPT_HOST_FUNCTION_REQUEST',
+          }),
+          '*'
         );
       });
     });

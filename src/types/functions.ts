@@ -12,4 +12,25 @@ type UnrecognizedServerFunctions = {
 
 type ServerFunctions<FM extends FunctionMap> = RecognizedServerFunctions<FM> & UnrecognizedServerFunctions;
 
-export { FunctionMap, ServerFunctions };
+type HostFunctions = {
+  /**
+   * Closes the current dialog or sidebar.
+   */
+  close: () => void;
+  /**
+   * Sets the height of the current dialog. Doesn't work in sidebars.
+   * @param height the new height, in pixels
+   */
+  setHeight: (height: number) => void;
+  /**
+   * Sets the width of the current dialog. Doesn't work in sidebars.
+   * @param width the new width, in pixels
+   */
+  setWidth: (width: number) => void;
+  /**
+   * Switches browser focus from the dialog or sidebar to the Google Docs, Sheets, or Forms editor.
+   */
+  focusEditor: () => void;
+};
+
+export { FunctionMap, ServerFunctions, HostFunctions };
