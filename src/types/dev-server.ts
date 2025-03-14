@@ -1,4 +1,20 @@
-type GASStore = Record<
+export enum MessageType {
+  REQUEST = 'REQUEST',
+  RESPONSE = 'RESPONSE',
+  SCRIPT_HOST_FUNCTION_REQUEST = 'SCRIPT_HOST_FUNCTION_REQUEST',
+}
+
+export enum ResponseStatus {
+  ERROR = 'ERROR',
+  SUCCESS = 'SUCCESS',
+}
+
+export enum OriginType {
+  GAS = 'GAS',
+  APP = 'App',
+}
+
+export type GASStore = Record<
   string,
   {
     resolve: (value?: unknown) => void;
@@ -6,27 +22,36 @@ type GASStore = Record<
   }
 >;
 
-interface GasFunctionData {
-  id: string;
-  type: 'REQUEST' | 'RESPONSE';
+export interface GasScriptData {
+  type: MessageType;
 }
 
-interface DevServerRequest extends GasFunctionData {
+export interface DevServerRequest extends GasScriptData {
+  id: string;
   args: unknown[];
   functionName: string;
-  type: 'REQUEST';
+  type: MessageType.REQUEST;
 }
 
-interface DevServerResponse extends GasFunctionData {
+export interface DevServerResponse extends GasScriptData {
+  id: string;
   response: unknown;
-  status: 'ERROR' | 'SUCCESS';
-  type: 'RESPONSE';
+  status: ResponseStatus;
+  type: MessageType.RESPONSE;
 }
 
-interface DevServerContentWindow<Origin extends 'GAS' | 'App'> extends Window {
+export interface DevServerScriptHostFunctionRequest extends GasScriptData {
+  type: MessageType.SCRIPT_HOST_FUNCTION_REQUEST;
+  functionName: string;
+  args: unknown[];
+}
+
+export interface DevServerContentWindow<Origin extends OriginType> extends Window {
   postMessage: {
     (
-      message: Origin extends 'GAS' ? DevServerResponse : DevServerRequest,
+      message: Origin extends OriginType.GAS
+        ? DevServerResponse
+        : DevServerRequest | DevServerScriptHostFunctionRequest,
       targetOrigin: string,
       transfer?: Transferable[]
     ): void;
@@ -34,17 +59,15 @@ interface DevServerContentWindow<Origin extends 'GAS' | 'App'> extends Window {
   };
 }
 
-interface AppWindow extends Window {
-  parent: DevServerContentWindow<'App'>;
+export interface AppWindow extends Window {
+  parent: DevServerContentWindow<OriginType.APP>;
   gasStore: GASStore;
 }
 
-interface DevServerRequestEvent extends MessageEvent {
+export interface DevServerRequestEvent extends MessageEvent {
   data: DevServerRequest;
 }
 
-interface GASDevServerIFrame extends HTMLIFrameElement {
-  contentWindow: DevServerContentWindow<'GAS'>;
+export interface GASDevServerIFrame extends HTMLIFrameElement {
+  contentWindow: DevServerContentWindow<OriginType.GAS>;
 }
-
-export { AppWindow, DevServerRequestEvent, GASDevServerIFrame };

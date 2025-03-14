@@ -1,3 +1,5 @@
+import { google } from '../types/google';
+
 const promisify = (functionName: string) => {
   return (...args: unknown[]) =>
     new Promise((resolve, reject) => {

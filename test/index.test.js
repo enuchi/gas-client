@@ -47,6 +47,9 @@ describe('production gas-client server', () => {
     global.google = {
       script: {
         run: {},
+        host: {
+          editor: {},
+        }
       },
     };
 

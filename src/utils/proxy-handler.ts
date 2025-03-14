@@ -1,9 +1,12 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AppWindow } from '../types/dev-server';
+import { AppWindow, MessageType } from '../types/dev-server';
 
 declare const window: AppWindow;
 
-const proxyHandler = (target: unknown, functionName: string): ((...args: unknown[]) => Promise<unknown>) => {
+const proxyHandlerServerFunction = (
+  target: unknown,
+  functionName: string
+): ((...args: unknown[]) => Promise<unknown>) => {
   const id = uuidv4();
   const promise = new Promise((resolve, reject) => {
     window.gasStore[id] = { resolve, reject };
@@ -11,7 +14,7 @@ const proxyHandler = (target: unknown, functionName: string): ((...args: unknown
   return (...args: unknown[]) => {
     window.parent.postMessage(
       {
-        type: 'REQUEST',
+        type: MessageType.REQUEST,
         id,
         functionName,
         args: [...args],
@@ -22,4 +25,17 @@ const proxyHandler = (target: unknown, functionName: string): ((...args: unknown
   };
 };
 
-export { proxyHandler };
+const proxyHandlerScriptHostFunction = (target: unknown, functionName: string): ((...args: unknown[]) => void) => {
+  return (...args: unknown[]) => {
+    window.parent.postMessage(
+      {
+        type: MessageType.SCRIPT_HOST_FUNCTION_REQUEST,
+        functionName,
+        args: [...args],
+      },
+      '*'
+    );
+  };
+};
+
+export { proxyHandlerServerFunction, proxyHandlerScriptHostFunction };

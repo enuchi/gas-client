@@ -1,3 +1,5 @@
+import { google } from "./google";
+
 type FunctionMap = Record<string, (...args: any[]) => any>;
 
 type Promisified<F extends (...args: any[]) => any> = (...params: Parameters<F>) => Promise<ReturnType<F>>;
@@ -12,4 +14,11 @@ type UnrecognizedServerFunctions = {
 
 type ServerFunctions<FM extends FunctionMap> = RecognizedServerFunctions<FM> & UnrecognizedServerFunctions;
 
-export { FunctionMap, ServerFunctions };
+type HostFunctions = {
+  close: typeof google.script.host.close;
+  setHeight: typeof google.script.host.setHeight;
+  setWidth: typeof google.script.host.setWidth;
+  focusEditor: typeof google.script.host.editor.focus;
+};
+
+export { FunctionMap, ServerFunctions, HostFunctions };

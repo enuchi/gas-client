@@ -1,6 +1,6 @@
 import { FunctionMap, ServerFunctions } from '../types/functions';
 
-abstract class FunctionHost<FM extends FunctionMap> {
+abstract class FunctionProvider<FM extends FunctionMap> {
   protected _serverFunctions: ServerFunctions<FM> = {} as ServerFunctions<FM>;
 
   get serverFunctions(): ServerFunctions<FM> {
@@ -8,4 +8,4 @@ abstract class FunctionHost<FM extends FunctionMap> {
   }
 }
 
-export { FunctionHost };
+export { FunctionProvider };

@@ -1,10 +1,7 @@
 // Google Apps Script methods available to scripts
 // This is a very slightly modified version of https://gist.githubusercontent.com/DominikPalo/bea3d958877566fe24ebe5ee1688d976/raw/e03a426c815f7f06bd3072213e732ab7f42d82c7/google.script.d.ts
 // It simply replaces "any" types with "unknown" and adds the "withLogger" method to the existing gist.
-declare namespace google {
-  /**
-   * Methods available to Google Apps Script
-   */
+export declare namespace google {
   namespace script {
     interface IRun {
       [serverSideFunction: string]: Function;
@@ -59,14 +56,14 @@ declare namespace google {
       /**
        * Pushes the provided state object, URL parameters and URL fragment onto the browser history stack.
        * @param stateObject An developer-defined object to be associated with a browser history event, and which resurfaces when the state is popped. Typically used to store application state information (such as page data) for future retrieval.
-       * @param params An object containing URL parameters to associate with this state. For example, {foo: “bar”, fiz: “baz”} equates to "?foo=bar&fiz=baz". Alternatively, arrays can be used: {foo: [“bar”, “cat”], fiz: “baz”} equates to "?foo=bar&foo=cat&fiz=baz". If null or undefined, the current URL parameters are not changed. If empty, the URL parameters are cleared.
+       * @param params An object containing URL parameters to associate with this state. For example, {foo: "bar", fiz: "baz"} equates to "?foo=bar&fiz=baz". Alternatively, arrays can be used: {foo: ["bar", "cat"], fiz: "baz"} equates to "?foo=bar&foo=cat&fiz=baz". If null or undefined, the current URL parameters are not changed. If empty, the URL parameters are cleared.
        * @param hash The string URL fragment appearing after the '#' character. If null or undefined, the current URL fragment is not changed. If empty, the URL fragment is cleared.
        */
       function push(stateObject?: unknown, params?: { [key: string]: unknown }, hash?: string): void;
       /**
        * Replaces the top event on the browser history stack with the provided (developer-defined) state object, URL parameters and URL fragment. This is otherwise identical to push().
        * @param stateObject An developer-defined object to be associated with a browser history event, and which resurfaces when the state is popped. Typically used to store application state information (such as page data) for future retrieval.
-       * @param params An object containing URL parameters to associate with this state. For example, {foo: “bar”, fiz: “baz”} equates to "?foo=bar&fiz=baz". Alternatively, arrays can be used: {foo: [“bar”, “cat”], fiz: “baz”} equates to "?foo=bar&foo=cat&fiz=baz". If null or undefined, the current URL parameters are not changed. If empty, the URL parameters are cleared.
+       * @param params An object containing URL parameters to associate with this state. For example, {foo: "bar", fiz: "baz"} equates to "?foo=bar&fiz=baz". Alternatively, arrays can be used: {foo: ["bar", "cat"], fiz: "baz"} equates to "?foo=bar&foo=cat&fiz=baz". If null or undefined, the current URL parameters are not changed. If empty, the URL parameters are cleared.
        * @param hash The string URL fragment appearing after the '#' character. If null or undefined, the current URL fragment is not changed. If empty, the URL fragment is cleared.
        */
       function replace(stateObject?: unknown, params?: { [key: string]: unknown }, hash?: string): void;
