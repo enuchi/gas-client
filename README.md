@@ -84,13 +84,47 @@ async () => {
 
 Now we can use familiar Promises in our client-side code and have easy access to all server functions.
 
+### Using the scriptHostFunctions
+
+The `GASClient` also provides a `scriptHostFunctions` property that gives you access to Google's script host functions, which allow you to control UI elements like dialogs and sidebars:
+
+```javascript
+import { GASClient } from 'gas-client';
+const { scriptHostFunctions } = new GASClient();
+
+// Close the current dialog or sidebar
+scriptHostFunctions.close();
+
+// Set the height of the current dialog (in pixels)
+scriptHostFunctions.setHeight(500);
+
+// Set the width of the current dialog (in pixels)
+scriptHostFunctions.setWidth(400);
+
+// Switch focus from dialog/sidebar to the editor
+scriptHostFunctions.focusEditor(); // calls google.script.host.editor.focus()
+```
+
+These functions provide the same functionality as the corresponding methods in `google.script.host` but work in both production and development environments:
+
+- `close()`: Closes the current dialog or sidebar
+- `setHeight(height)`: Sets the height of the current dialog (in pixels)
+- `setWidth(width)`: Sets the width of the current dialog (in pixels)
+- `focusEditor()`: Switches browser focus from the dialog or sidebar to the Google Docs, Sheets, or Forms editor
+
+See reference here: https://developers.google.com/apps-script/guides/html/reference/host
+
+In production, these functions call the native Google Apps Script host methods directly. In development mode, they dispatch appropriate messages to the parent iframe. See section below on how to set up the parent iframe.
+
+## Setting up the dev server wrapper
+
+Use the [React-Google-Apps-Script](https://github.com/enuchi/React-Google-Apps-Script/) project to get started. Or reference the [dev server wrapper](https://github.com/enuchi/React-Google-Apps-Script/blob/main/dev/dev-server-wrapper.html#L40-L41) on how to set up the parent wrapper to work with `gas-client`.
+
 ---
 
 ## Typescript
 
-This project now supports typescript!
-
-To use it, simply import your server functions and pass them as a type parameter when creating your server.
+This project supports typescript. To use it, simply import your server functions and pass them as a type parameter when creating your server.
 
 ### On your server-side code
 
@@ -152,9 +186,14 @@ The config object takes:
 
 ### Production mode
 
-In the normal Google Apps Script production environment, a `new GASClient()` instance will have one available method:
+In the normal Google Apps Script production environment, a `new GASClient()` instance will have the following available methods:
 
 - `serverFunctions`: an object containing all publicly exposed server functions (see example above).
+- `scriptHostFunctions`: an object containing methods to interact with the script host UI, including:
+  - `close()`: Close the current dialog or sidebar
+  - `setHeight(height)`: Set the dialog height in pixels
+  - `setWidth(width)`: Set the dialog width in pixels
+  - `focusEditor()`: Switch focus from dialog/sidebar to the editor
 
 Note that `allowedDevelopmentDomains` and `parentTargetOrigin` configurations will be ignored in production, so the same code can and should be used for development and production.
 
@@ -162,9 +201,10 @@ Note that `allowedDevelopmentDomains` and `parentTargetOrigin` configurations wi
 
 Development mode for the `gas-client` helper class will be run when the `google` client API cannot be loaded.
 
-Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance with the following method in development mode:
+Calling `new GASClient({ allowedDevelopmentDomains })` will create an instance with the following methods in development mode:
 
 - `serverFunctions`: a proxy object, used for development purposes, that mimics calling `google.script.run`. It will dispatch a message to the parent iframe (our custom Dev Server), which will call an app that actually interacts with the `google.script.run` API. Development mode will also handle the response and resolve or reject based on the response type. See the implementation for details on the event signature.
+- `scriptHostFunctions`: a proxy object that simulates the behavior of `google.script.host` methods in development mode by sending appropriate messages to the parent iframe.
 
 ## Contributors
 
