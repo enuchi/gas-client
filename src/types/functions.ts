@@ -18,12 +18,12 @@ type HostFunctions = {
    */
   close: () => void;
   /**
-   * Sets the height of the current dialog.
+   * Sets the height of the current dialog. Doesn't work in sidebars.
    * @param height the new height, in pixels
    */
   setHeight: (height: number) => void;
   /**
-   * Sets the width of the current dialog.
+   * Sets the width of the current dialog. Doesn't work in sidebars.
    * @param width the new width, in pixels
    */
   setWidth: (width: number) => void;
