@@ -11,7 +11,7 @@ class ScriptHostFunctions extends ScriptHostProvider {
       close: google.script.host.close,
       setHeight: google.script.host.setHeight,
       setWidth: google.script.host.setWidth,
-      focusEditor: google.script.host.editor.focus,
+      focusEditor: google.script.host.editor?.focus,
     };
   }
 }
