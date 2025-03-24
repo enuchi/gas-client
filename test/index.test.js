@@ -143,6 +143,17 @@ describe('production gas-client server', () => {
 
     expect(global.google.script.host.editor.focus).toHaveBeenCalled();
   });
+
+  test('should handle missing google.script.host.editor property, for webapp projects', () => {
+    // Set up the environment without the editor property
+    delete global.google.script.host.editor;
+    
+    // This should not throw an error when the editor property is missing
+    const server = new GASClient();
+    
+    // The focusEditor property should exist but be undefined
+    expect(server.scriptHostFunctions).toHaveProperty('focusEditor', undefined);
+  });
 });
 describe('local development gas-client server', () => {
   const eventHandlersStore = [];
